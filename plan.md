@@ -31,6 +31,7 @@
   4. **🎤 Voiceover Mode** (ใหม่) — ใส่คลิป/รูป + เสียง AI พากย์
 
 ### Step 9.2 — Frontend Routing
+- [x] 43: สถานะโครงการ: ⏳ ช่วงปรับปรุง UX/UI (Phase 16) - กำลังปรับโฉมให้พรีเมียมระดับ CapCut
 - [x] สร้าง Route สำหรับแต่ละ Preset: `/ranking`, `/sequence`, `/split-screen`, `/voiceover`
 - [x] แชร์ Components ที่ใช้ร่วมกัน (Timeline, ClipCard, PreviewPanel)
 - [x] สร้าง Layout หลักที่ Sidebar เลือกโหมดได้ตลอด
@@ -381,6 +382,28 @@ ffmpeg -i v1.mp4 -i v2.mp4 -i v3.mp4 -i v4.mp4 \
 - [x] ลบไฟล์ขนาดใหญ่ที่เคยถูก track ใน Git history (ถ้ามี)
 - [x] แก้ไข Critical UI Bug ใน `TimelineEditor` (Snap points type error & Playhead drag freeze)
 - [ ] แนะนำการใช้ Git LFS หากจำเป็นต้องเก็บไฟล์ขนาดใหญ่จริงๆ
+
+---
+
+## ✨ Phase 16: UX/UI Refinement & Premium Polish (Current)
+
+### เป้าหมาย:
+ยกระดับประสบการณ์ผู้ใช้ (UX) และหน้าตาโปรแกรม (UI) ให้ดูพรีเมียมและลื่นไหลระดับ CapCut
+
+### Step 16.1 — Unified Design System
+- [ ] ปรับ TimelineEditor และ PreviewPanel ให้เป็น Glassmorphism สไตล์เดียวกับ ClipCard
+- [ ] เปลี่ยน Emoji Icons เป็น Professional SVG Icons (Lucide/Heroicons)
+- [ ] กำหนดมาตรฐาน Color Palette (Deep Dark + Purple Neon)
+
+### Step 16.2 — Advanced Timeline Interactions
+- [ ] ระบบ Snap Guides (Magnetic Snapping) พร้อมเส้นไกด์สีแดง
+- [ ] Ghosting/Preview Effect ขณะลากคลิปบน Timeline
+- [ ] ปรับปรุง Playhead ให้ดูเป็นมืออาชีพ
+
+### Step 16.3 — Tooling & Modals
+- [ ] จัดกลุ่ม Toolbar ใหม่ (Transport, Edit, Library, Settings)
+- [ ] ปรับปรุง Text/Overlay Editor Modal ให้สวยงามและใช้งานง่ายขึ้น
+- [ ] เพิ่ม Micro-animations ด้วย Framer Motion ในทุกจุดสัมผัส
 
 ---
 

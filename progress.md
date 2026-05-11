@@ -54,7 +54,14 @@
 
 ---
 
-## 📊 สรุปสถานะปัจจุบัน: 100% (Maintenance Mode)
-KERN-R Studio พร้อมสำหรับการพัฒนาต่อยอดและ Push ขึ้น GitHub ได้อย่างราบรื่น
+## ⏳ Phase 16: UX/UI Refinement & Premium Polish (In Progress)
+- [ ] ปรับปรุง Timeline UX (Snap guides, Drag feedback)
+- [ ] เปลี่ยนชุด Icon เป็น SVG ชุดเดียวกันทั้งระบบ
+- [ ] ปรับสไตล์ Preview Panel ให้เป็น Glassmorphism สมบูรณ์แบบ
+
+---
+
+## 📊 สรุปสถานะปัจจุบัน: 95% (Polish Phase)
+KERN-R Studio พร้อมสำหรับการพัฒนาต่อยอดและอยู่ในช่วงปรับแต่งความสวยงาม (Polish)
 
 *หมายเหตุ: ทุกระบบรันได้จริงบนเครื่องผู้ใช้ผ่าน Electron และรองรับภาษาไทยสมบูรณ์แบบ*
