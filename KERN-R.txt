@@ -1,0 +1,43 @@
+KERN-R Studio — สุดยอดโปรแกรมตัดต่อวิดีโอ AI ครบวงจร
+
+ความสามารถปัจจุบัน (V2.0 - Complete Edition):
+
+1. ระบบ Multi-Preset System:
+- 🏆 Ranking Mode: สร้างวิดีโอจัดอันดับ Top N พร้อม Layout สวยงาม
+- 🎬 Sequence Mode: เรียงคลิปต่อกันพร้อมปรับขนาดอัตโนมัติ
+- 📐 Split Screen Mode: แบ่งหน้าจอ 2 ช่อง (Side-by-side) หรือ 4 ช่อง (Grid)
+- 🎤 Voiceover Mode: ใส่คลิป/รูป พร้อมเสียง AI พากย์และซับ
+
+2. ระบบ Advanced Timeline Editor:
+- ตัดต่อละเอียดระดับวินาที (0.1s precision)
+- Multi-Track: Video, Audio, SFX, และ Overlay
+- Drag & Drop: ย้ายตำแหน่ง SFX และรูปเด้งบน Timeline ได้อิสระ
+- Zoom In/Out: เพื่อการตัดต่อที่แม่นยำ
+
+3. ระบบ AI Voice & Subtitles Pro:
+- รองรับ 3 Engine: edge-tts, Kokoro TTS (เสียงพรีเมียม), และ Piper TTS (รัน Local)
+- Auto Subtitles: สร้างซับไทย/อังกฤษ อัตโนมัติจากสคริปต์
+- รองรับภาษาไทยสมบูรณ์แบบ: ใช้ไฟล์ .ass ป้องกันสระลอยและปรับสไตล์ (ฟอนต์ Kanit, ขอบ, สี) ได้สวยงาม
+- Subtitle Animations: Typewriter, Fade, Karaoke
+
+4. ระบบ Effects & Transitions:
+- SFX Library: Whoosh, Pop, Ding, Drum Roll พร้อมใช้งาน
+- Overlay Animations: รูปเด้ง (Pop-in), เลื่อน (Slide), จาง (Fade)
+- Flash Transition: เอฟเฟกต์แสงวาบตอนเปลี่ยนอันดับหรือเปลี่ยนคลิป
+
+5. สถาปัตยกรรม Desktop Hybrid:
+- Electron App: รันได้เหมือนแอปทั่วไปบน Windows
+- Zero Dependency: ฝัง ffmpeg, yt-dlp และ AI Engine ไว้ในแอป
+- Cloud Sync: ซิงค์งานและ Storage ผ่าน Supabase อัตโนมัติ
+
+6. การประมวลผลวิดีโอระดับโปร:
+- FFmpeg Engine: ใช้การประมวลผลขั้นสูง (Filter Complex)
+- Standardized Output: 1080x1920 (9:16) หรือ 1920x1080 (16:9) ที่ 30fps
+- รองรับ YouTube, TikTok, Facebook, Instagram ลิงก์ตรง
+
+7. การดูแลระบบและความเสถียร (Maintenance & Stability):
+- Git Hygiene: จัดการ Repository ให้สะอาดด้วย .gitignore ป้องกันไฟล์ขยะและไฟล์ขนาดใหญ่
+- UI Stability: แก้ไขบั๊กเชิงโครงสร้างใน Timeline Editor เพื่อการตัดต่อที่ลื่นไหลและแม่นยำ
+- Optimized Code: ปรับปรุง TypeScript Types ให้ถูกต้องทั่วทั้งโปรเจกต์
+
+สถานะโครงการ: ✅ เสร็จสมบูรณ์ (Phase 1-15) - พร้อมสำหรับการพัฒนาต่อยอดและ Production
