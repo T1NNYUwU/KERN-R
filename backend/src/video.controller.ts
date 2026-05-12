@@ -91,6 +91,22 @@ export class VideoController {
     return { url: `${BACKEND_URL}/temp/${tempFile}` };
   }
 
+  @Post('render')
+  async renderTimeline(@Body() body: any) {
+    const { id, clips, mediaFiles } = body;
+    const jobId = id || crypto.randomUUID();
+    
+    this.logger.log(`Adding timeline render job: ${jobId}`);
+    await this.videoQueueService.addVideoJob({
+      id: jobId,
+      preset_mode: 'timeline',
+      clips,
+      mediaFiles
+    });
+    
+    return { jobId };
+  }
+
   @Post('generate')
   async generate(@Body() body: { preset_mode: string; video_settings: any; items_payload: any[] }) {
     const jobId = uuidv4();
@@ -160,6 +176,44 @@ export class VideoController {
     }
     this.logger.log(`Overlay uploaded: ${file.path}`);
     return { imagePath: file.path };
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: (req, file, cb) => {
+        const dir = path.join(process.cwd(), 'uploads');
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        cb(null, dir);
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `${uniqueSuffix}-${file.originalname.replace(/\s+/g, '_')}`);
+      },
+    }),
+  }))
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new Error('File upload failed');
+
+    let publicUrl = `${BACKEND_URL}/uploads/${file.filename}`;
+
+    // Try to upload to Supabase if configured
+    try {
+      const supabaseUrl = await this.supabaseService.uploadFile(file.path, `assets/${file.filename}`);
+      if (supabaseUrl) {
+        publicUrl = supabaseUrl;
+        this.logger.log(`File uploaded to Supabase: ${publicUrl}`);
+      }
+    } catch (e) {
+      this.logger.warn('Failed to upload to Supabase, falling back to local URL');
+    }
+
+    return { 
+      url: publicUrl,
+      filename: file.filename,
+      mimetype: file.mimetype,
+      size: file.size
+    };
   }
 
   @Get('status/:id')

@@ -1,0 +1,379 @@
+import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
+import { saveMediaFile, deleteMediaFile, getMediaFile, getAllMediaIds } from './db'
+
+export type ClipType = 'video' | 'audio' | 'image' | 'text'
+
+export interface MediaFile {
+  id: string
+  name: string
+  type: ClipType
+  file: File
+  url: string        // Object URL
+  duration: number   // seconds
+  thumbnail?: string // Object URL for thumbnail
+  width?: number
+  height?: number
+}
+
+// Serializable version of MediaFile
+export interface PersistedMediaFile extends Omit<MediaFile, 'file' | 'url'> {
+  url?: string // Persistent URL (e.g. Supabase or Backend URL)
+}
+
+export interface Clip {
+  id: string
+  mediaId: string
+  name: string
+  type: ClipType
+  trackId: string
+  // Timeline position
+  startTime: number   // where it starts on the global timeline (seconds)
+  duration: number    // how long it plays (seconds)
+  // Trim (source in/out)
+  trimStart: number   // offset from media start (seconds)
+  trimEnd: number     // offset from media end (seconds, 0 = play to end)
+  // Volume
+  volume: number      // 0.0 - 2.0
+  // Transitions
+  fadeIn?: number     // seconds, default 0
+  fadeOut?: number    // seconds, default 0
+  // Video / Image transform
+  scaleX?: number      // % default 100
+  scaleY?: number      // % default 100
+  posX?: number        // % offset from center, default 0
+  posY?: number        // % offset from center, default 0
+  opacity?: number     // 0–100, default 100
+  rotate?: number      // degrees, default 0
+  // For text clips
+  text?: string
+  textColor?: string
+  textSize?: number
+  textX?: number
+  textY?: number
+  textFont?: string
+  textFontFamily?: string
+  textBold?: boolean
+  textItalic?: boolean
+  textShadow?: boolean
+  textStroke?: number
+  textStrokeColor?: string
+  textBg?: string
+  textAnimation?: 'none' | 'fade' | 'slide-up' | 'pop'
+}
+
+export interface Track {
+  id: string
+  name: string
+  type: 'video' | 'audio' | 'image' | 'text' | 'overlay'
+  muted: boolean
+  locked: boolean
+  height: number
+}
+
+export interface HistoryEntry {
+  tracks: Track[]
+  clips: Clip[]
+}
+
+interface EditorStore {
+  // Initialization
+  isInitialized: boolean
+  initStore: () => Promise<void>
+
+  // Media library
+  mediaFiles: MediaFile[]
+  persistedMediaMeta: PersistedMediaFile[]
+  addMedia: (file: MediaFile) => Promise<void>
+  removeMedia: (id: string) => Promise<void>
+
+  // Tracks
+  tracks: Track[]
+  addTrack: (type: Track['type']) => string
+  removeTrack: (id: string) => void
+  updateTrack: (id: string, updates: Partial<Track>) => void
+
+  // Clips
+  clips: Clip[]
+  addClip: (clip: Clip) => void
+  removeClip: (id: string) => void
+  updateClip: (id: string, updates: Partial<Clip>) => void
+  splitClip: (clipId: string, atTime: number) => void
+  moveClip: (clipId: string, newStartTime: number, newTrackId?: string) => void
+
+  // Playback
+  currentTime: number
+  isPlaying: boolean
+  setCurrentTime: (t: number) => void
+  setIsPlaying: (p: boolean) => void
+
+  // Selection
+  selectedClipId: string | null
+  setSelectedClipId: (id: string | null) => void
+
+  // Timeline view
+  zoom: number          // px per second
+  setZoom: (z: number) => void
+  scrollX: number
+  setScrollX: (x: number) => void
+
+  // Total duration
+  totalDuration: number
+
+  // History (Undo/Redo)
+  history: HistoryEntry[]
+  historyIndex: number
+  pushHistory: () => void
+  undo: () => void
+  redo: () => void
+}
+
+const DEFAULT_TRACK_HEIGHT = 56
+const MAIN_TRACK_HEIGHT = 72
+
+let trackCounter = 1
+let clipCounter = 1
+
+export const useEditorStore = create<EditorStore>()(
+  persist(
+    (set, get) => ({
+      isInitialized: false,
+      initStore: async () => {
+        if (get().isInitialized) return
+        
+        // Restore media files from IndexedDB
+        const { persistedMediaMeta } = get()
+        const loadedMedia: MediaFile[] = []
+        
+        // Get all DB keys to find dangling files
+        const allDbIds = await getAllMediaIds()
+        const validIds = new Set(persistedMediaMeta.map(m => m.id))
+        
+        for (const meta of persistedMediaMeta) {
+          try {
+            const file = await getMediaFile(meta.id)
+            if (file) {
+              const url = (meta.url && meta.url.startsWith('http')) ? meta.url : URL.createObjectURL(file)
+              loadedMedia.push({ ...meta, file, url })
+            } else if (meta.url && meta.url.startsWith('http')) {
+              // Remote file only
+              loadedMedia.push({
+                ...meta,
+                file: new File([], meta.name),
+                url: meta.url
+              })
+            }
+          } catch (e) {
+            console.error('Failed to load media file', meta.id, e)
+          }
+        }
+        
+        // Clean up unreferenced files in IndexedDB to free disk space
+        for (const dbId of allDbIds) {
+          if (!validIds.has(dbId)) {
+            await deleteMediaFile(dbId)
+          }
+        }
+        
+        set({ mediaFiles: loadedMedia, isInitialized: true })
+      },
+
+      mediaFiles: [],
+      persistedMediaMeta: [],
+      addMedia: async (media) => {
+        if (media.file.size > 0) {
+          await saveMediaFile(media.id, media.file)
+        }
+        set(s => {
+          const { file, ...metaWithUrl } = media
+          const meta: PersistedMediaFile = {
+            ...metaWithUrl,
+            url: media.url.startsWith('http') ? media.url : undefined
+          }
+          return {
+            mediaFiles: [...s.mediaFiles, media],
+            persistedMediaMeta: [...s.persistedMediaMeta, meta]
+          }
+        })
+      },
+      removeMedia: async (id) => {
+        await deleteMediaFile(id)
+        set(s => {
+          // Free memory by revoking object URL
+          const mediaToRemove = s.mediaFiles.find(m => m.id === id)
+          if (mediaToRemove?.url) URL.revokeObjectURL(mediaToRemove.url)
+
+          return {
+            mediaFiles: s.mediaFiles.filter(f => f.id !== id),
+            persistedMediaMeta: s.persistedMediaMeta.filter(m => m.id !== id)
+          }
+        })
+      },
+
+      tracks: [],
+  addTrack: (type) => {
+    const id = `track-${type}-${++trackCounter}`
+    const name = type === 'video' ? 'Video' : type === 'audio' ? 'Audio' : type === 'text' ? 'Text' : 'Overlay'
+    const track: Track = { id, name, type, muted: false, locked: false, height: DEFAULT_TRACK_HEIGHT }
+    set(s => ({ tracks: [...s.tracks, track] }))
+    return id
+  },
+  removeTrack: (id) => set(s => ({
+    tracks: s.tracks.filter(t => t.id !== id),
+    clips: s.clips.filter(c => c.trackId !== id),
+  })),
+  updateTrack: (id, updates) => set(s => ({
+    tracks: s.tracks.map(t => t.id === id ? { ...t, ...updates } : t),
+  })),
+
+  clips: [],
+  addClip: (clip) => {
+    get().pushHistory()
+    set(s => {
+      let newClips = [...s.clips, clip]
+      newClips = applyMagneticLogic(newClips, s.tracks)
+      return {
+        clips: newClips,
+        totalDuration: calcDuration(newClips),
+      }
+    })
+  },
+  removeClip: (id) => {
+    get().pushHistory()
+    set(s => {
+      let newClips = s.clips.filter(c => c.id !== id)
+      newClips = applyMagneticLogic(newClips, s.tracks)
+      return {
+        clips: newClips,
+        selectedClipId: s.selectedClipId === id ? null : s.selectedClipId,
+        totalDuration: calcDuration(newClips),
+      }
+    })
+  },
+  updateClip: (id, updates) => {
+    set(s => {
+      let newClips = s.clips.map(c => c.id === id ? { ...c, ...updates } : c)
+      newClips = applyMagneticLogic(newClips, s.tracks)
+      return { clips: newClips, totalDuration: calcDuration(newClips) }
+    })
+  },
+  splitClip: (clipId, atTime) => {
+    const { clips, tracks } = get()
+    const clip = clips.find(c => c.id === clipId)
+    if (!clip) return
+    const splitLocal = atTime - clip.startTime // where in the clip to cut
+    if (splitLocal <= 0.1 || splitLocal >= clip.duration - 0.1) return
+
+    get().pushHistory()
+
+    const leftId = `clip-${++clipCounter}`
+    const rightId = `clip-${++clipCounter}`
+
+    const left: Clip = { ...clip, id: leftId, duration: splitLocal }
+    const right: Clip = {
+      ...clip, id: rightId,
+      startTime: clip.startTime + splitLocal,
+      duration: clip.duration - splitLocal,
+      trimStart: clip.trimStart + splitLocal,
+    }
+
+    set(s => {
+      let newClips = s.clips.filter(c => c.id !== clipId).concat([left, right])
+      newClips = applyMagneticLogic(newClips, s.tracks)
+      return { clips: newClips, selectedClipId: rightId, totalDuration: calcDuration(newClips) }
+    })
+  },
+  moveClip: (clipId, newStartTime, newTrackId) => {
+    get().pushHistory()
+    set(s => {
+      let newClips = s.clips.map(c =>
+        c.id === clipId
+          ? { ...c, startTime: Math.max(0, newStartTime), ...(newTrackId ? { trackId: newTrackId } : {}) }
+          : c
+      )
+      newClips = applyMagneticLogic(newClips, s.tracks)
+      return { clips: newClips, totalDuration: calcDuration(newClips) }
+    })
+  },
+
+  currentTime: 0,
+  isPlaying: false,
+  setCurrentTime: (t) => set({ currentTime: t }),
+  setIsPlaying: (p) => set({ isPlaying: p }),
+
+  selectedClipId: null,
+  setSelectedClipId: (id) => set({ selectedClipId: id }),
+
+  zoom: 80,
+  setZoom: (z) => set({ zoom: Math.max(20, Math.min(400, z)) }),
+  scrollX: 0,
+  setScrollX: (x) => set({ scrollX: Math.max(0, x) }),
+
+  totalDuration: 30,
+
+  history: [],
+  historyIndex: -1,
+  pushHistory: () => {
+    const { tracks, clips, history, historyIndex } = get()
+    const entry: HistoryEntry = {
+      tracks: JSON.parse(JSON.stringify(tracks)),
+      clips: JSON.parse(JSON.stringify(clips)),
+    }
+    const newHistory = history.slice(0, historyIndex + 1).concat([entry])
+    set({ history: newHistory.slice(-50), historyIndex: Math.min(newHistory.length - 1, 49) })
+  },
+  undo: () => {
+    const { history, historyIndex } = get()
+    if (historyIndex <= 0) return
+    const entry = history[historyIndex - 1]
+    set({ ...entry, historyIndex: historyIndex - 1, totalDuration: calcDuration(entry.clips) })
+  },
+  redo: () => {
+    const { history, historyIndex } = get()
+    if (historyIndex >= history.length - 1) return
+    const entry = history[historyIndex + 1]
+    set({ ...entry, historyIndex: historyIndex + 1, totalDuration: calcDuration(entry.clips) })
+  },
+}), {
+  name: 'editor-storage-v3',
+  storage: createJSONStorage(() => localStorage),
+  partialize: (state) => ({
+    tracks: state.tracks,
+    clips: state.clips,
+    totalDuration: state.totalDuration,
+    persistedMediaMeta: state.persistedMediaMeta
+  })
+}))
+
+function applyMagneticLogic(clips: Clip[], tracks: Track[]): Clip[] {
+  // We define the "Main Track" as the first video track created or the one with a specific index
+  const videoTracks = tracks.filter(t => t.type === 'video');
+  if (videoTracks.length === 0) return clips;
+  
+  const mainTrackId = videoTracks[0].id;
+  let newClips = [...clips];
+  
+  // Sort clips on the main track by their current start time to preserve order
+  const mainTrackClips = newClips
+    .filter(c => c.trackId === mainTrackId)
+    .sort((a, b) => a.startTime - b.startTime);
+  
+  let currentPos = 0;
+  for (const clip of mainTrackClips) {
+    if (Math.abs(clip.startTime - currentPos) > 0.001) { // Floating point safety
+      newClips = newClips.map(c => 
+        c.id === clip.id ? { ...c, startTime: currentPos } : c
+      );
+    }
+    currentPos += clip.duration;
+  }
+  
+  return newClips;
+}
+
+function calcDuration(clips: Clip[]): number {
+  if (clips.length === 0) return 10
+  return Math.max(10, ...clips.map(c => c.startTime + c.duration))
+}
+
+export function makeClipId() { return `clip-${++clipCounter}` }

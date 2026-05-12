@@ -4,6 +4,7 @@ import { SupabaseService } from './supabase.service';
 import { RankingProcessor } from './processors/ranking.processor';
 import { SequenceProcessor } from './processors/sequence.processor';
 import { SplitScreenProcessor } from './processors/split-screen.processor';
+import { TimelineProcessor } from './processors/timeline.processor';
 
 @Injectable()
 export class VideoProcessor implements OnModuleInit {
@@ -11,11 +12,13 @@ export class VideoProcessor implements OnModuleInit {
   private rankingProcessor: RankingProcessor;
   private sequenceProcessor: SequenceProcessor;
   private splitScreenProcessor: SplitScreenProcessor;
+  private timelineProcessor: TimelineProcessor;
 
   constructor(private readonly supabaseService: SupabaseService) {
     this.rankingProcessor = new RankingProcessor(supabaseService);
     this.sequenceProcessor = new SequenceProcessor(supabaseService);
     this.splitScreenProcessor = new SplitScreenProcessor(supabaseService);
+    this.timelineProcessor = new TimelineProcessor(supabaseService);
   }
 
   onModuleInit() {
@@ -35,6 +38,9 @@ export class VideoProcessor implements OnModuleInit {
               break;
             case 'split':
               await this.splitScreenProcessor.process(id, video_settings, items_payload);
+              break;
+            case 'timeline':
+              await this.timelineProcessor.process(id, job.data.clips, job.data.mediaFiles);
               break;
             default:
               console.error(`Unknown preset mode: ${preset_mode}`);

@@ -54,14 +54,28 @@
 
 ---
 
-## ⏳ Phase 16: UX/UI Refinement & Premium Polish (In Progress)
-- [ ] ปรับปรุง Timeline UX (Snap guides, Drag feedback)
-- [ ] เปลี่ยนชุด Icon เป็น SVG ชุดเดียวกันทั้งระบบ
-- [ ] ปรับสไตล์ Preview Panel ให้เป็น Glassmorphism สมบูรณ์แบบ
+## ✅ Phase 16: KERN-R Studio V3 - Core Engine (Phase 3 เสร็จ)
+- [x] Data Persistence & Robust State (IndexedDB + Zustand Persist)
+- [x] Multi-track Architecture (Video, Audio, Text, Overlay)
+- [x] Timeline Engine: Magnetic & Core Interactions
+    - [x] Clip Trim & Split (S key)
+    - [x] Magnetic Main Track (Auto-shift clips)
+    - [x] Snapping Logic (Snap to edges/playhead)
+- [x] Canvas & Inspector (Phase 3)
+    - [x] Video Transform: Scale X/Y, Position X/Y, Opacity, Rotate (Inspector sliders)
+    - [x] Video Transform applied on Canvas (CSS transform)
+    - [x] Text Styling: Stroke width/color, Background color, Font Family selector
+    - [x] Text Overlay resize handles (8 จุด: N, NE, E, SE, S, SW, W, NW)
+    - [x] Inspector แยกเป็น component (Inspector.tsx)
+    - [x] Undo/Redo buttons ใน TopBar ทำงานได้จริง
+- [ ] Advanced Export (FFmpeg.wasm Multi-track)
+- [ ] Keyframes (Basic)
 
 ---
 
-## 📊 สรุปสถานะปัจจุบัน: 95% (Polish Phase)
-KERN-R Studio พร้อมสำหรับการพัฒนาต่อยอดและอยู่ในช่วงปรับแต่งความสวยงาม (Polish)
-
-*หมายเหตุ: ทุกระบบรันได้จริงบนเครื่องผู้ใช้ผ่าน Electron และรองรับภาษาไทยสมบูรณ์แบบ*
+## 📊 สรุปสถานะปัจจุบัน: 96% (V3 CapCut Clone & Polish Complete)
+KERN-R Studio V3 — Phase 3 (Canvas & Inspector) เสร็จสมบูรณ์แล้ว
+- Inspector.tsx: เปลี่ยนมาใช้ Tabbed Interface สไตล์ CapCut Online, รองรับหน่วยความดังแบบ เดซิเบล (dB) สำหรับ Audio
+- VideoPreview.tsx: เปลี่ยน Text Bounding Box เป็นขอบขาว มี Rotate Handle ลบ Text Shadow อัตโนมัติ แก้ไขการคำนวณ Duration, ปรับปรุงการเล่น Audio ให้ซิงค์กับ Video และทำ Buffering check
+- Timeline.tsx: ปรับสีและหน้าตาใหม่หมด เพิ่มคลิกขวา (Context Menu) รองรับฟังก์ชันแยกเสียง (Separate Audio) ดึง Thumbnail วิดีโอมาแสดง
+- สิ่งที่เหลือ: Phase 4 (FFmpeg multi-track export) และ Phase 5 (YouTube/TTS/SmartCut)

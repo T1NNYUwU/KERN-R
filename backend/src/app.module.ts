@@ -24,6 +24,10 @@ const frontendPath = isElectron
         serveRoot: '/temp',
       },
       {
+        rootPath: join(process.cwd(), 'uploads'),
+        serveRoot: '/uploads',
+      },
+      {
         rootPath: frontendPath,
         serveRoot: '/',
       }

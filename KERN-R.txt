@@ -1,43 +1,43 @@
 KERN-R Studio — สุดยอดโปรแกรมตัดต่อวิดีโอ AI ครบวงจร
 
-ความสามารถปัจจุบัน (V2.0 - Complete Edition):
+ความสามารถปัจจุบัน (V3.0 - CapCut Clone Engine):
 
-1. ระบบ Multi-Preset System:
-- 🏆 Ranking Mode: สร้างวิดีโอจัดอันดับ Top N พร้อม Layout สวยงาม
-- 🎬 Sequence Mode: เรียงคลิปต่อกันพร้อมปรับขนาดอัตโนมัติ
-- 📐 Split Screen Mode: แบ่งหน้าจอ 2 ช่อง (Side-by-side) หรือ 4 ช่อง (Grid)
-- 🎤 Voiceover Mode: ใส่คลิป/รูป พร้อมเสียง AI พากย์และซับ
+1. ระบบ Core Architecture ใหม่:
+- 🗄️ Local Database (IndexedDB): บันทึก Media Files ลง Browser ป้องกันไฟล์หายเมื่อ Refresh
+- 💾 Auto-save System: บันทึก Timeline State ลง LocalStorage อัตโนมัติทุกการเคลื่อนไหว
+- 🔄 History Engine: ระบบ Undo/Redo สูงสุด 50 ขั้นตอน สำหรับทุก Action (ปุ่มใน TopBar ทำงานได้จริง)
 
-2. ระบบ Advanced Timeline Editor:
-- ตัดต่อละเอียดระดับวินาที (0.1s precision)
-- Multi-Track: Video, Audio, SFX, และ Overlay
-- Drag & Drop: ย้ายตำแหน่ง SFX และรูปเด้งบน Timeline ได้อิสระ
-- Zoom In/Out: เพื่อการตัดต่อที่แม่นยำ
+2. ระบบ Advanced Timeline Engine (V3):
+- 🧲 Magnetic Timeline: ระบบแทร็กหลักที่คลิปดูดติดกันอัตโนมัติ (CapCut Style)
+- ✂️ Multi-Track Precision: รองรับแทร็ก Video (Main/PIP), Audio, Text และ Overlay แยกกัน
+- 📏 Precision Editing: ตัดคลิป (Split), ยืด/หด (Trim) และเคลื่อนย้ายคลิปได้ลื่นไหล
+- 🧩 Snapping Logic: ระบบดูดติดขอบคลิปและ Playhead เพื่อความแม่นยำ
 
-3. ระบบ AI Voice & Subtitles Pro:
-- รองรับ 3 Engine: edge-tts, Kokoro TTS (เสียงพรีเมียม), และ Piper TTS (รัน Local)
-- Auto Subtitles: สร้างซับไทย/อังกฤษ อัตโนมัติจากสคริปต์
-- รองรับภาษาไทยสมบูรณ์แบบ: ใช้ไฟล์ .ass ป้องกันสระลอยและปรับสไตล์ (ฟอนต์ Kanit, ขอบ, สี) ได้สวยงาม
-- Subtitle Animations: Typewriter, Fade, Karaoke
+3. ระบบ Canvas & Inspector (Phase 3 — ใหม่):
+- 🎬 Video Transform: ปรับ Scale X/Y, Position X/Y, Opacity, Rotate ได้จาก Inspector panel
+- 🖼️ Canvas Transform: วิดีโอแสดงผล transform (scale/position/rotate/opacity) บนหน้าจอพรีวิวจริง
+- 📝 Text Styling ขั้นสูง: ปรับ Stroke (ขอบ), Background color, Font Family ได้อย่างอิสระ ไม่มีเงาที่จำกัดสี
+- 🔲 Text Resize Handles: ลากปรับขนาด Text Overlay โดยตรงบน Canvas พร้อมกรอบสีขาวและ Rotate handle แบบ CapCut
+- 🧩 Inspector Component: แผง Properties แบบแยก Tab สไตล์ CapCut Online, สามารถปรับความดังเสียงในหน่วย เดซิเบล (dB) ได้อย่างละเอียด
+- 🖱️ Timeline Navigation: รองรับการเลื่อน Timeline แนวนอนด้วยลูกกลิ้งเมาส์ (Mouse Wheel)
+- ✂️ Separate Audio: คลิกขวาที่คลิปเพื่อแยกเสียงออกจากภาพ (ปิดเสียงคลิปเดิมและสร้าง Track เสียงใหม่ให้อัตโนมัติ)
+- 🖼️ Video Thumbnails: คลิปบนไทม์ไลน์แสดงรูป Thumbnail เป็นพื้นหลังให้รู้ว่าคลิปไหนเป็นคลิปไหน
+- ⚡ Audio Sync Engine: ระบบเช็คการโหลดข้อมูล (Buffering check) ป้องกันปัญหาเสียงเล่นไปก่อนที่วิดีโอจะโหลดเสร็จ
 
-4. ระบบ Effects & Transitions:
-- SFX Library: Whoosh, Pop, Ding, Drum Roll พร้อมใช้งาน
-- Overlay Animations: รูปเด้ง (Pop-in), เลื่อน (Slide), จาง (Fade)
-- Flash Transition: เอฟเฟกต์แสงวาบตอนเปลี่ยนอันดับหรือเปลี่ยนคลิป
+4. สถาปัตยกรรม (อัปเดตล่าสุด):
+- ลบระบบ Electron ออกทั้งหมด เปลี่ยนเป็น Web-Native แบบเต็มตัวเพื่อความรวดเร็วและใช้ขุมพลังเบราว์เซอร์
+- ระบบสร้าง Track อัตโนมัติ (Dynamic Tracks) ไม่ต้องจอง Track ล่วงหน้า
 
-5. สถาปัตยกรรม Desktop Hybrid:
-- Electron App: รันได้เหมือนแอปทั่วไปบน Windows
-- Zero Dependency: ฝัง ffmpeg, yt-dlp และ AI Engine ไว้ในแอป
-- Cloud Sync: ซิงค์งานและ Storage ผ่าน Supabase อัตโนมัติ
+4. ระบบ AI Voice & Subtitles Pro:
+- 🎙️ AI Voiceover (New): รวมระบบ Edge TTS เข้ากับหน้าตัดต่อโดยตรง เลือกเสียงไทย/อังกฤษ และสร้างคลิปลงไทม์ไลน์ได้ทันที
+- 🗣️ Audio Engine: ระบบแยกเสียง (Separate Audio) ที่แม่นยำ พร้อมการควบคุมระดับเสียงแยกรายคลิป
+- ⚙️ Multi-Engine Support: รองรับ edge-tts, Kokoro TTS และ Piper TTS
 
-6. การประมวลผลวิดีโอระดับโปร:
-- FFmpeg Engine: ใช้การประมวลผลขั้นสูง (Filter Complex)
-- Standardized Output: 1080x1920 (9:16) หรือ 1920x1080 (16:9) ที่ 30fps
-- รองรับ YouTube, TikTok, Facebook, Instagram ลิงก์ตรง
+5. ระบบประมวลผลวิดีโอระดับโปร (Cloud Rendering):
+- ☁️ Backend Export Engine: เปลี่ยนจากการเรนเดอร์บนเบราว์เซอร์ มาเป็นการส่งงานไปเรนเดอร์บน Server (Node.js + FFmpeg)
+- 🎞️ Multi-Layer Render: รองรับการ Overlay วิดีโอ/รูปภาพ, ผสมเสียง และฝังซับไตเติ้ล (Burn-in Text) แบบสมบูรณ์
+- 📊 Progress Tracking: ระบบ Polling เช็คสถานะการเรนเดอร์แบบ Real-time พร้อมดาวน์โหลดอัตโนมัติเมื่อเสร็จ
+- 📦 Supabase Integration: บันทึกวิดีโอที่เรนเดอร์เสร็จแล้วลงบน Cloud Storage (Bucket: assets) ถาวร
 
-7. การดูแลระบบและความเสถียร (Maintenance & Stability):
-- Git Hygiene: จัดการ Repository ให้สะอาดด้วย .gitignore ป้องกันไฟล์ขยะและไฟล์ขนาดใหญ่
-- UI Stability: แก้ไขบั๊กเชิงโครงสร้างใน Timeline Editor เพื่อการตัดต่อที่ลื่นไหลและแม่นยำ
-- Optimized Code: ปรับปรุง TypeScript Types ให้ถูกต้องทั่วทั้งโปรเจกต์
+สถานะโครงการ: 🚀 V3 Phase 4 เสร็จสิ้น (100%) — ขั้นต่อไป: Phase 5 AI Exclusive Features & Polish
 
-สถานะโครงการ: ⏳ ช่วงปรับปรุง UX/UI (Phase 16) - กำลังปรับโฉมให้พรีเมียมระดับ CapCut

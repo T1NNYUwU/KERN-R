@@ -292,7 +292,7 @@ export class RankingProcessor extends BaseProcessor {
          execSync(`${ffmpeg} -f concat -safe 0 -i "clips.txt" -c:v libx264 -preset fast -pix_fmt yuv420p -c:a aac -ar 44100 -async 1 "final.mp4" -y`, { cwd: tempDir });
       }
       
-      const publicUrl = await this.supabaseService.uploadVideo(finalPath, `${id}.mp4`);
+      const publicUrl = await this.supabaseService.uploadFile(finalPath, `${id}.mp4`);
       await this.supabaseService.updateJobStatus(id, 'COMPLETED', 100, publicUrl || undefined);
       await this.cleanup(tempDir);
       return publicUrl || '';
