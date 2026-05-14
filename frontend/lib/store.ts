@@ -346,29 +346,9 @@ export const useEditorStore = create<EditorStore>()(
 }))
 
 function applyMagneticLogic(clips: Clip[], tracks: Track[]): Clip[] {
-  // We define the "Main Track" as the first video track created or the one with a specific index
-  const videoTracks = tracks.filter(t => t.type === 'video');
-  if (videoTracks.length === 0) return clips;
-  
-  const mainTrackId = videoTracks[0].id;
-  let newClips = [...clips];
-  
-  // Sort clips on the main track by their current start time to preserve order
-  const mainTrackClips = newClips
-    .filter(c => c.trackId === mainTrackId)
-    .sort((a, b) => a.startTime - b.startTime);
-  
-  let currentPos = 0;
-  for (const clip of mainTrackClips) {
-    if (Math.abs(clip.startTime - currentPos) > 0.001) { // Floating point safety
-      newClips = newClips.map(c => 
-        c.id === clip.id ? { ...c, startTime: currentPos } : c
-      );
-    }
-    currentPos += clip.duration;
-  }
-  
-  return newClips;
+  // Disabled magnetic logic to allow free-form dragging
+  // This solves the bug where users cannot move a single clip
+  return clips;
 }
 
 function calcDuration(clips: Clip[]): number {

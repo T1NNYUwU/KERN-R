@@ -58,9 +58,9 @@
 - [x] Data Persistence & Robust State (IndexedDB + Zustand Persist)
 - [x] Multi-track Architecture (Video, Audio, Text, Overlay)
 - [x] Timeline Engine: Magnetic & Core Interactions
-    - [x] Clip Trim & Split (S key)
-    - [x] Magnetic Main Track (Auto-shift clips)
-    - [x] Snapping Logic (Snap to edges/playhead)
+    - [x] Clip Trim & Smart Split (ตัดคลิปตรงที่เลือก หรือคลิปที่อยู่ใต้ Playhead อัตโนมัติ)
+    - [x] Free-form Timeline (ปิด Magnetic ชั่วคราวเพื่อให้ขยับบล็อกได้อิสระ)
+    - [x] Playback Engine: วิดีโอเล่นข้ามช่องว่าง (Gaps) ได้ ไม่หยุดเมื่อไม่เจอคลิป
 - [x] Canvas & Inspector (Phase 3)
     - [x] Video Transform: Scale X/Y, Position X/Y, Opacity, Rotate (Inspector sliders)
     - [x] Video Transform applied on Canvas (CSS transform)
@@ -77,5 +77,5 @@
 KERN-R Studio V3 — Phase 3 (Canvas & Inspector) เสร็จสมบูรณ์แล้ว
 - Inspector.tsx: เปลี่ยนมาใช้ Tabbed Interface สไตล์ CapCut Online, รองรับหน่วยความดังแบบ เดซิเบล (dB) สำหรับ Audio
 - VideoPreview.tsx: เปลี่ยน Text Bounding Box เป็นขอบขาว มี Rotate Handle ลบ Text Shadow อัตโนมัติ แก้ไขการคำนวณ Duration, ปรับปรุงการเล่น Audio ให้ซิงค์กับ Video และทำ Buffering check
-- Timeline.tsx: ปรับสีและหน้าตาใหม่หมด เพิ่มคลิกขวา (Context Menu) รองรับฟังก์ชันแยกเสียง (Separate Audio) ดึง Thumbnail วิดีโอมาแสดง
+- Timeline.tsx: แก้บั๊กระบบตัดคลิป (Smart Split) และปิดการดูดคลิปเข้าหากันชั่วคราวให้เลื่อนตำแหน่งได้อย่างอิสระ
 - สิ่งที่เหลือ: Phase 4 (FFmpeg multi-track export) และ Phase 5 (YouTube/TTS/SmartCut)

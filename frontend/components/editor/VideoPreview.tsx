@@ -165,41 +165,10 @@ function TextOverlay({ clip }: { clip: ReturnType<typeof useEditorStore.getState
   )
 }
 
-// Cache for MediaElementSourceNode to prevent "already connected" error
-const sourceNodesCache = new WeakMap<HTMLMediaElement | HTMLAudioElement, MediaElementAudioSourceNode>()
-
 // ── Background Audio Player ──────────────────────────────────────────────────
 function AudioClipPlayer({ clip, isPlaying, currentTime }: { clip: ReturnType<typeof useEditorStore.getState>['clips'][0], isPlaying: boolean, currentTime: number }) {
   const media = useEditorStore(s => s.mediaFiles.find(m => m.id === clip.mediaId))
   const audioRef = useRef<HTMLAudioElement>(null)
-  const gainNodeRef = useRef<GainNode | null>(null)
-
-  useEffect(() => {
-    if (!audioRef.current) return
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-    if (!AudioContextClass) return
-    
-    const ctx = new AudioContextClass()
-    try {
-      let source = sourceNodesCache.get(audioRef.current)
-      if (!source) {
-        source = ctx.createMediaElementSource(audioRef.current)
-        sourceNodesCache.set(audioRef.current, source)
-      }
-      const gain = ctx.createGain()
-      source.connect(gain)
-      gain.connect(ctx.destination)
-      gainNodeRef.current = gain
-    } catch (e) {
-      console.warn('Web Audio API setup failed for audio clip:', e)
-    }
-    
-    return () => {
-      // Don't close context here if we want to reuse it, 
-      // but closing is safer for memory in dynamic clips
-      ctx.close().catch(() => {})
-    }
-  }, [])
 
   useEffect(() => {
     if (!audioRef.current || !media?.url) return
@@ -215,9 +184,7 @@ function AudioClipPlayer({ clip, isPlaying, currentTime }: { clip: ReturnType<ty
   }, [media?.url, clip.id])
 
   useEffect(() => {
-    if (gainNodeRef.current) {
-      gainNodeRef.current.gain.value = Math.pow(10, (clip.volume ?? 0) / 20)
-    } else if (audioRef.current) {
+    if (audioRef.current) {
       audioRef.current.volume = toLinearVolume(clip.volume ?? 0)
     }
   }, [clip.volume])
@@ -240,13 +207,14 @@ function AudioClipPlayer({ clip, isPlaying, currentTime }: { clip: ReturnType<ty
   useEffect(() => {
     if (!audioRef.current || !isPlaying) return
     const target = clip.trimStart + (currentTime - clip.startTime)
-    if (Math.abs(audioRef.current.currentTime - target) > 0.25) {
+    // Only sync if drift is significant to avoid stuttering
+    if (Math.abs(audioRef.current.currentTime - target) > 1.0) {
       audioRef.current.currentTime = target
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTime, isPlaying])
+  }, [isPlaying, clip.id]) // Remove currentTime dependency
 
-  return <audio ref={audioRef} style={{ display: 'none' }} />
+  return <audio ref={audioRef} crossOrigin="anonymous" style={{ display: 'none' }} />
 }
 
 // ── Main VideoPreview ─────────────────────────────────────────────────────────
@@ -258,7 +226,7 @@ export default function VideoPreview() {
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const rafRef   = useRef<number>(0)
-  const stateRef = useRef({ currentTime: 0, isPlaying: false, totalDuration: 30, wallStart: 0, editorStart: 0 })
+  const stateRef = useRef({ currentTime: 0, isPlaying: false, totalDuration: 30, wallStart: 0, editorStart: 0, lastReportedTime: 0, lastUpdate: 0, lastRafTime: 0 })
   stateRef.current.currentTime   = currentTime
   stateRef.current.isPlaying     = isPlaying
   stateRef.current.totalDuration = totalDuration
@@ -300,64 +268,39 @@ export default function VideoPreview() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeMedia?.url])
 
+  // Sync video element with store currentTime
   useEffect(() => {
-    if (isPlaying) {
-      // Sync video continuously if it drifts while playing
-      const v = videoRef.current
-      if (!v || !activeClip || !activeMedia) return
-      const target = activeClip.trimStart + (currentTime - activeClip.startTime)
-      if (Math.abs(v.currentTime - target) > 0.25) {
-        v.currentTime = Math.max(0, target)
-      }
-      return
-    }
-    
-    // Sync while paused
     const v = videoRef.current
     if (!v || !activeClip || !activeMedia) return
+
     const target = activeClip.trimStart + (currentTime - activeClip.startTime)
-    if (Math.abs(v.currentTime - target) > 0.1) {
-      v.currentTime = Math.max(0, target)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTime, isPlaying])
 
-  // Apply volume using Web Audio API for main video
-  const videoGainRef = useRef<GainNode | null>(null)
-
-  useEffect(() => {
-    if (!videoRef.current) return
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-    if (!AudioContextClass) return
-    
-    const ctx = new AudioContextClass()
-    try {
-      let source = sourceNodesCache.get(videoRef.current)
-      if (!source) {
-        source = ctx.createMediaElementSource(videoRef.current)
-        sourceNodesCache.set(videoRef.current, source)
+    if (isPlaying) {
+      // While playing, only sync if drift is massive (emergency correction)
+      // and NOT every frame. Browsers handle playback speed well.
+      if (Math.abs(v.currentTime - target) > 1.5) {
+        v.currentTime = Math.max(0, target)
       }
-      const gain = ctx.createGain()
-      source.connect(gain)
-      gain.connect(ctx.destination)
-      videoGainRef.current = gain
-    } catch (e) {
-      console.warn('Web Audio API setup failed for video:', e)
+    } else {
+      // While paused, sync precisely
+      if (Math.abs(v.currentTime - target) > 0.1) {
+        v.currentTime = Math.max(0, target)
+      }
     }
+  // We remove currentTime from dependencies to avoid seeking every frame
+  // and causing a buffering loop. Instead, we rely on the video's natural playback.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, activeClip?.id, activeMedia?.url])
 
-    return () => {
-      ctx.close().catch(() => {})
-    }
-  }, [])
+  // We rely strictly on HTMLMediaElement.volume to avoid Web Audio API CORS silencing issues.
+  // The setup of AudioContext has been removed.
 
   useEffect(() => {
     const track = activeClip ? useEditorStore.getState().tracks.find(t => t.id === activeClip.trackId) : null
     const isMuted = track?.muted ?? false
     const db = isMuted ? -100 : (activeClip?.volume ?? 0)
 
-    if (videoGainRef.current) {
-      videoGainRef.current.gain.value = Math.pow(10, db / 20)
-    } else if (videoRef.current) {
+    if (videoRef.current) {
       videoRef.current.volume = toLinearVolume(db)
     }
   }, [activeClip?.volume, activeClip?.trackId, activeClip?.id])
@@ -368,15 +311,17 @@ export default function VideoPreview() {
       videoRef.current?.pause()
       return
     }
+
     stateRef.current.wallStart   = performance.now()
     stateRef.current.editorStart = currentTime
-
-    if (activeMedia && videoRef.current) videoRef.current.play().catch(() => {})
-
+    
+    if (activeMedia && videoRef.current) {
+      videoRef.current.play().catch(() => {})
+    }
     const tick = (now: number) => {
       // Check for buffering (readyState < 3: HAVE_FUTURE_DATA)
       let buf = false
-      if (activeMedia && videoRef.current) {
+      if (activeMediaRef.current && videoRef.current) {
         if (videoRef.current.readyState < 3) buf = true
       }
       setIsBuffering(prev => {
@@ -384,12 +329,22 @@ export default function VideoPreview() {
         return prev
       })
 
-      if (buf) {
-        // Shift wallStart forward to prevent jumping ahead when buffering finishes
+      // Detect external seek (if store's currentTime changed outside this loop)
+      const drift = Math.abs(stateRef.current.currentTime - (stateRef.current.lastReportedTime || 0))
+      if (drift > 0.5) {
+        // External seek detected! Reset origin
         stateRef.current.wallStart = now
+        stateRef.current.editorStart = stateRef.current.currentTime
+      }
+
+      const dt = now - (stateRef.current.lastRafTime || now)
+      stateRef.current.lastRafTime = now
+
+      if (buf) {
+        stateRef.current.wallStart += dt
       } else {
         const elapsed  = (now - stateRef.current.wallStart) / 1000
-        const nextTime = Math.max(0, stateRef.current.editorStart + elapsed) // Clamp to 0
+        const nextTime = Math.max(0, stateRef.current.editorStart + elapsed)
 
         if (nextTime >= stateRef.current.totalDuration) {
           setCurrentTime(stateRef.current.totalDuration)
@@ -397,7 +352,25 @@ export default function VideoPreview() {
           videoRef.current?.pause()
           return
         }
-        setCurrentTime(nextTime)
+
+        // Throttled Store Update (Approx 30fps)
+        const nowMs = performance.now()
+        if (!stateRef.current.lastUpdate || nowMs - stateRef.current.lastUpdate > 32) {
+           setCurrentTime(nextTime)
+           stateRef.current.lastUpdate = nowMs
+        }
+        
+        stateRef.current.lastReportedTime = nextTime
+
+        // Sync video element less frequently
+        const v = videoRef.current
+        if (v && activeClipRef.current) {
+          const target = activeClipRef.current.trimStart + (nextTime - activeClipRef.current.startTime)
+          if (v.paused) v.play().catch(() => {})
+          if (Math.abs(v.currentTime - target) > 0.5) {
+            v.currentTime = target
+          }
+        }
       }
       
       rafRef.current = requestAnimationFrame(tick)
@@ -493,6 +466,7 @@ export default function VideoPreview() {
         {/* Video element */}
         <video
           ref={videoRef}
+          crossOrigin="anonymous"
           playsInline
           onWaiting={() => setIsBuffering(true)}
           onPlaying={() => setIsBuffering(false)}

@@ -46,9 +46,10 @@ interface ClipBlockProps {
   onSelect: () => void
   onDelete: () => void
   onContextMenu: (e: React.MouseEvent) => void
+  onClickTime?: (clientX: number) => void
 }
 
-function ClipBlock({ clip, zoom, trackH, isSelected, onSelect, onDelete, onContextMenu }: ClipBlockProps) {
+function ClipBlock({ clip, zoom, trackH, isSelected, onSelect, onDelete, onContextMenu, onClickTime }: ClipBlockProps) {
   const media = useEditorStore(s => s.mediaFiles.find(m => m.id === clip.mediaId))
   const col = trackBg(clip.type)
   const left = clip.startTime * zoom
@@ -136,7 +137,12 @@ function ClipBlock({ clip, zoom, trackH, isSelected, onSelect, onDelete, onConte
         boxShadow: isSelected ? `0 0 0 1.5px ${col.border}` : 'inset 0 0 0 1px rgba(255,255,255,0.05)',
         cursor: 'grab',
       }}
-      onMouseDown={e => { if (e.button !== 2) startDrag(e, 'move') }}
+      onMouseDown={e => { 
+        if (e.button !== 2) {
+          startDrag(e, 'move')
+          if (onClickTime) onClickTime(e.clientX)
+        }
+      }}
       onClick={e => { e.stopPropagation(); onSelect() }}
       onContextMenu={onContextMenu}
     >
@@ -207,11 +213,60 @@ export default function Timeline() {
   const isDraggingPlayhead = useRef(false)
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, clip: Clip } | null>(null)
 
+  // ── Auto-scroll logic ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isPlaying || isDraggingPlayhead.current || !rulerAreaRef.current) return
+    
+    const container = rulerAreaRef.current
+    const playheadAbsoluteX = LABEL_W + (currentTime * zoom)
+    const scrollLeft = container.scrollLeft
+    const viewportW = container.clientWidth
+
+    // If playhead goes beyond the right edge, or is dragged past the left edge, scroll to center it
+    if (playheadAbsoluteX > scrollLeft + viewportW - 50 || playheadAbsoluteX < scrollLeft + LABEL_W) {
+       container.scrollLeft = playheadAbsoluteX - (viewportW / 2)
+    }
+  }, [currentTime, isPlaying, zoom])
+
   // Close context menu when clicking outside
   useEffect(() => {
     const fn = () => setContextMenu(null)
     window.addEventListener('click', fn)
     return () => window.removeEventListener('click', fn)
+  }, [])
+
+  // ── Smart Split Logic ───────────────────────────────────────────────────────
+  const handleSmartSplit = useCallback(() => {
+    const s = useEditorStore.getState()
+    const t = s.currentTime
+    let targetId = s.selectedClipId
+
+    // Check if selected clip is valid and intersecting
+    const selectedClip = s.clips.find(c => c.id === targetId)
+    const isSelectedIntersecting = selectedClip && t > selectedClip.startTime + 0.05 && t < selectedClip.startTime + selectedClip.duration - 0.05
+
+    if (!isSelectedIntersecting) {
+      // Find all clips intersecting the playhead
+      const intersectingClips = s.clips.filter(c => t > c.startTime + 0.05 && t < c.startTime + c.duration - 0.05)
+      if (intersectingClips.length > 0) {
+        // Prioritize video tracks (main track) over audio
+        const videoTracks = s.tracks.filter(tr => tr.type === 'video').map(tr => tr.id)
+        const videoClip = intersectingClips.find(c => videoTracks.includes(c.trackId))
+        
+        if (videoClip) {
+          targetId = videoClip.id
+        } else {
+          // Fallback to the topmost intersecting clip
+          targetId = intersectingClips[intersectingClips.length - 1].id
+        }
+      } else {
+        targetId = null
+      }
+    }
+
+    if (targetId) {
+      s.splitClip(targetId, t)
+    }
   }, [])
 
   // ── Keyboard shortcuts ──────────────────────────────────────────────────────
@@ -221,13 +276,16 @@ export default function Timeline() {
       if (targetTag === 'INPUT' || targetTag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return
       
       if (e.code === 'Space') { e.preventDefault(); setIsPlaying(!isPlaying) }
-      if ((e.key === 's' || e.key === 'S') && selectedClipId) splitClip(selectedClipId, currentTime)
+      if ((e.key === 's' || e.key === 'S') || (e.key === 'b' && (e.ctrlKey || e.metaKey))) {
+        e.preventDefault()
+        handleSmartSplit()
+      }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedClipId) removeClip(selectedClipId)
       if (e.key === 'z' && (e.ctrlKey || e.metaKey)) e.shiftKey ? redo() : undo()
     }
     window.addEventListener('keydown', fn)
     return () => window.removeEventListener('keydown', fn)
-  }, [selectedClipId, currentTime, isPlaying, splitClip, removeClip, setIsPlaying, undo, redo])
+  }, [selectedClipId, currentTime, isPlaying, handleSmartSplit, removeClip, setIsPlaying, undo, redo])
 
   // ── Wheel-zoom ───────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -317,7 +375,7 @@ export default function Timeline() {
           </div>
           <div className="w-px h-3.5 bg-[#3a3a42]"></div>
           <div className="flex items-center gap-4">
-            <button onClick={() => selectedClipId && splitClip(selectedClipId, currentTime)} className={`hover:text-white transition-colors ${!selectedClipId && 'opacity-40 cursor-not-allowed'}`} title="Split (S)">
+            <button onClick={handleSmartSplit} className={`hover:text-white transition-colors`} title="Split (Ctrl+B)">
               <SplitSquareHorizontal className="w-[18px] h-[18px]" />
             </button>
             <button onClick={() => selectedClipId && removeClip(selectedClipId)} className={`hover:text-white transition-colors ${!selectedClipId && 'opacity-40 cursor-not-allowed'}`} title="Delete (Del)">
@@ -436,6 +494,7 @@ export default function Timeline() {
                         key={clip.id} clip={clip} zoom={zoom} trackH={track.height}
                         isSelected={clip.id === selectedClipId}
                         onSelect={() => setSelectedClipId(clip.id)}
+                        onClickTime={(clientX) => setCurrentTime(getTimeFromEvent(clientX))}
                         onDelete={() => removeClip(clip.id)}
                         onContextMenu={(e) => {
                           e.preventDefault()
