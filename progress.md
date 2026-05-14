@@ -61,6 +61,7 @@
     - [x] Clip Trim & Smart Split (ตัดคลิปตรงที่เลือก หรือคลิปที่อยู่ใต้ Playhead อัตโนมัติ)
     - [x] Free-form Timeline (ปิด Magnetic ชั่วคราวเพื่อให้ขยับบล็อกได้อิสระ)
     - [x] Playback Engine: วิดีโอเล่นข้ามช่องว่าง (Gaps) ได้ ไม่หยุดเมื่อไม่เจอคลิป
+    - [x] Storage Cleanup: ระบบลบไฟล์ใน uploads อัตโนมัติหลังอัปโหลดขึ้น Cloud และปุ่ม Clean Garbage ใน MediaBin
 - [x] Canvas & Inspector (Phase 3)
     - [x] Video Transform: Scale X/Y, Position X/Y, Opacity, Rotate (Inspector sliders)
     - [x] Video Transform applied on Canvas (CSS transform)

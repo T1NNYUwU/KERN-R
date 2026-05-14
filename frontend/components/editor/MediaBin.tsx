@@ -1,7 +1,7 @@
 'use client'
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useState } from 'react'
 import { useEditorStore, MediaFile, makeClipId, Clip } from '../../lib/store'
-import { Film, Music, Image as ImageIcon, Plus, Trash2, Import, UploadCloud } from 'lucide-react'
+import { Film, Music, Image as ImageIcon, Plus, Trash2, Import, UploadCloud, Sparkles } from 'lucide-react'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -74,6 +74,41 @@ function fmtDur(s: number) {
 export default function MediaBin() {
   const { mediaFiles, addMedia, removeMedia, clips, tracks, addClip, addTrack } = useEditorStore()
   const inputRef = useRef<HTMLInputElement>(null)
+  const [isCleaning, setIsCleaning] = useState(false)
+
+  const handleCleanup = async () => {
+    if (!confirm('Are you sure you want to clean up server garbage? This will remove all temporary files and local uploads.')) return
+    
+    setIsCleaning(true)
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
+      const res = await fetch(`${backendUrl}/api/videos/cleanup`, { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        alert(`Cleanup successful! Deleted ${data.deletedCount} files.`)
+      }
+    } catch (err) {
+      console.error('Cleanup failed:', err)
+    } finally {
+      setIsCleaning(false)
+    }
+  }
+
+  const handleRemoveMedia = async (media: MediaFile) => {
+    // If it's a local backend file, try to delete it
+    if (media.url && media.url.includes('/uploads/')) {
+      try {
+        const filename = media.url.split('/').pop()
+        if (filename) {
+          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
+          await fetch(`${backendUrl}/api/videos/uploads/${filename}`, { method: 'DELETE' })
+        }
+      } catch (e) {
+        console.warn('Failed to delete file from server:', e)
+      }
+    }
+    removeMedia(media.id)
+  }
 
   const processFiles = useCallback(async (files: FileList | File[]) => {
     for (const file of Array.from(files)) {
@@ -221,7 +256,7 @@ export default function MediaBin() {
                   <Plus className="w-3.5 h-3.5" />
                 </button>
                 <button
-                  onClick={e => { e.stopPropagation(); removeMedia(media.id) }}
+                  onClick={e => { e.stopPropagation(); handleRemoveMedia(media) }}
                   className="w-5 h-5 rounded flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-colors"
                   title="Remove"
                 >
@@ -233,10 +268,22 @@ export default function MediaBin() {
         )}
       </div>
 
-      {/* Footer: count */}
+      {/* Footer: count and cleanup */}
       {mediaFiles.length > 0 && (
         <div className="px-4 py-2 shrink-0 border-t border-zinc-800/60 flex justify-between items-center bg-zinc-950/50">
           <p className="text-[10px] font-medium text-zinc-600">{mediaFiles.length} item{mediaFiles.length !== 1 ? 's' : ''}</p>
+          <button
+            onClick={handleCleanup}
+            disabled={isCleaning}
+            className="flex items-center gap-1 text-[10px] text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-50"
+            title="Clean up all server-side temporary files"
+          >
+            {isCleaning ? 'Cleaning...' : (
+              <>
+                <Sparkles className="w-3 h-3" /> Clean Garbage
+              </>
+            )}
+          </button>
         </div>
       )}
     </div>

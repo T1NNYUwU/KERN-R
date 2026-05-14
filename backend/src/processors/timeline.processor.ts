@@ -21,12 +21,27 @@ export class TimelineProcessor {
         const media = mediaFiles.find(m => m.id === mediaId);
         if (!media) continue;
 
-        const localPath = path.join(process.cwd(), 'uploads', media.id + path.extname(media.name));
-        // If file doesn't exist locally, we might need to download it from URL
+        let localPath = path.join(process.cwd(), 'uploads', media.id + path.extname(media.name));
+        
+        // Ensure uploads directory exists
+        const uploadsDir = path.dirname(localPath);
+        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+        // If file doesn't exist locally, download it from URL
         if (!fs.existsSync(localPath)) {
-            // Fallback: If it's a Supabase URL or absolute URL, we should ideally download it.
-            // For now, let's assume it's in the uploads folder if it's local development.
-            // In production, we'd use axios to download it.
+            const url = media.url;
+            if (url && url.startsWith('http')) {
+                console.log(`Downloading asset from ${url} to ${localPath}`);
+                try {
+                    // Use ffmpeg to download to ensure we get a compatible format or just use curl
+                    // -y to overwrite, -i for input, -c copy to avoid re-encoding
+                    execSync(`ffmpeg -y -i "${url}" -c copy "${localPath}"`);
+                } catch (err) {
+                    console.error(`Failed to download ${url}:`, err);
+                    // Try curl as a backup
+                    try { execSync(`curl -L -o "${localPath}" "${url}"`); } catch(e) {}
+                }
+            }
         }
         mediaMap[mediaId] = localPath;
       }

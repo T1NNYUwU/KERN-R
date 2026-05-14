@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query, NotFoundException, UseInterceptors, UploadedFile, Logger } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, Query, NotFoundException, UseInterceptors, UploadedFile, Logger } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
@@ -203,6 +203,16 @@ export class VideoController {
       if (supabaseUrl) {
         publicUrl = supabaseUrl;
         this.logger.log(`File uploaded to Supabase: ${publicUrl}`);
+        
+        // Auto-cleanup local file after successful cloud upload to save disk space
+        try {
+          if (fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+            this.logger.log(`Local file cleaned up: ${file.path}`);
+          }
+        } catch (cleanupErr) {
+          this.logger.warn(`Failed to cleanup local file: ${cleanupErr.message}`);
+        }
       }
     } catch (e) {
       this.logger.warn('Failed to upload to Supabase, falling back to local URL');
@@ -214,6 +224,52 @@ export class VideoController {
       mimetype: file.mimetype,
       size: file.size
     };
+  }
+
+  @Delete('uploads/:filename')
+  async deleteUpload(@Param('filename') filename: string) {
+    const filePath = path.join(process.cwd(), 'uploads', filename);
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        this.logger.log(`Manual cleanup: Deleted ${filename}`);
+        return { success: true, message: `Deleted ${filename}` };
+      }
+      return { success: false, message: 'File not found' };
+    } catch (error) {
+      this.logger.error(`Error deleting file ${filename}`, error);
+      throw error;
+    }
+  }
+
+  @Post('cleanup')
+  async cleanupAll() {
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    const tempDir = path.join(process.cwd(), 'temp');
+    let deletedCount = 0;
+
+    const cleanDir = (dir: string) => {
+      if (!fs.existsSync(dir)) return;
+      const files = fs.readdirSync(dir);
+      for (const file of files) {
+        const fullPath = path.join(dir, file);
+        if (fs.lstatSync(fullPath).isDirectory()) {
+          cleanDir(fullPath);
+          try { fs.rmdirSync(fullPath); } catch(e) {}
+        } else {
+          try {
+            fs.unlinkSync(fullPath);
+            deletedCount++;
+          } catch (e) {}
+        }
+      }
+    };
+
+    cleanDir(uploadsDir);
+    cleanDir(tempDir);
+    
+    this.logger.log(`Mass cleanup: Deleted ${deletedCount} files`);
+    return { success: true, deletedCount };
   }
 
   @Get('status/:id')
