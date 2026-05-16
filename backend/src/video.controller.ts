@@ -90,6 +90,54 @@ export class VideoController {
 
     return { url: `${BACKEND_URL}/temp/${tempFile}` };
   }
+  
+  @Post('tts')
+  async createTTS(@Body() body: { text: string; voice?: string; engine?: string }) {
+    const { text, engine = 'edge', voice } = body;
+    
+    if (!text) {
+      throw new NotFoundException('Text is required');
+    }
+
+    const jobId = uuidv4();
+    const tempFile = `tts_${jobId}.mp3`;
+    const tempDir = path.join(process.cwd(), 'temp', 'tts');
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+    const tempPath = path.join(tempDir, tempFile);
+    
+    await TTSEngine.generate({
+      text,
+      outputFile: tempPath,
+      engine: engine as any,
+      voice
+    });
+
+    // Upload to Supabase to make it permanent for the project
+    let publicUrl = `${BACKEND_URL}/temp/tts/${tempFile}`;
+    try {
+      const supabaseUrl = await this.supabaseService.uploadFile(tempPath, `tts/${tempFile}`);
+      if (supabaseUrl) publicUrl = supabaseUrl;
+    } catch (e) {
+      this.logger.warn('Failed to upload TTS to Supabase, using local URL');
+    }
+
+    // Get duration using ffprobe
+    let duration = 0;
+    try {
+      const ffprobe = this.getBinaryPath('ffprobe');
+      const info = execSync(`${ffprobe} -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${tempPath}"`).toString();
+      duration = parseFloat(info);
+    } catch (e) {
+      this.logger.warn('Failed to get TTS duration', e);
+    }
+
+    return { 
+      id: jobId,
+      url: publicUrl, 
+      duration,
+      name: `TTS: ${body.text.substring(0, 20)}...`
+    };
+  }
 
   @Post('render')
   async renderTimeline(@Body() body: any) {

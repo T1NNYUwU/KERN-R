@@ -63,22 +63,24 @@
     - [x] Playback Engine: วิดีโอเล่นข้ามช่องว่าง (Gaps) ได้ ไม่หยุดเมื่อไม่เจอคลิป
     - [x] Storage Cleanup: ระบบลบไฟล์ใน uploads อัตโนมัติหลังอัปโหลดขึ้น Cloud และปุ่ม Clean Garbage ใน MediaBin
     - [x] Canvas & Inspector (Phase 3)
+    - [x] Fix "Job Stalled" by converting FFmpeg to Async (`execAsync`)
+    - [x] Optimize Export Speed with GPU Acceleration (NVENC/MF)
+    - [x] Fix Audio Sync and Volume (dB to Linear, Resampling)
+    - [x] Precise Coordinate Mapping for Text and Video Transform
+    - [x] Robust Download System (Local Fallback + Manual Button)
     - [x] Video Transform: Scale X/Y, Position X/Y, Opacity, Rotate (Inspector sliders)
     - [x] Video Transform applied on Canvas (CSS transform)
     - [x] Text Styling: Stroke width/color, Background color, Font Family selector
     - [x] Text Overlay resize handles (8 จุด: N, NE, E, SE, S, SW, W, NW)
     - [x] Inspector แยกเป็น component (Inspector.tsx)
     - [x] Undo/Redo buttons ใน TopBar ทำงานได้จริง
-- [ ] Advanced Export (FFmpeg.wasm Multi-track)
-- [ ] Keyframes (Basic)
+- [x] Advanced Export (FFmpeg Server-side Multi-track)
+- [x] Keyframes & Color Adjustment (Full Animation Support)
 
 ---
 
-## 📊 สรุปสถานะปัจจุบัน: 96% (V3 CapCut Clone & Polish Complete)
-KERN-R Studio V3 — Phase 3 (Canvas & Inspector) เสร็จสมบูรณ์แล้ว
-- Inspector.tsx: เปลี่ยนมาใช้ Tabbed Interface สไตล์ CapCut Online, รองรับหน่วยความดังแบบ เดซิเบล (dB) สำหรับ Audio
-- VideoPreview.tsx: เปลี่ยน Text Bounding Box เป็นขอบขาว มี Rotate Handle ลบ Text Shadow อัตโนมัติ แก้ไขการคำนวณ Duration, ปรับปรุงการเล่น Audio ให้ซิงค์กับ Video และทำ Buffering check
-- Timeline.tsx: แก้บั๊กระบบตัดคลิป (Smart Split) และปิดการดูดคลิปเข้าหากันชั่วคราวให้เลื่อนตำแหน่งได้อย่างอิสระ
+## 📊 สรุปสถานะปัจจุบัน: 100% (V3 Production Ready)
+KERN-R Studio V3 — ทุกระบบทำงานร่วมกันได้อย่างสมบูรณ์แบบ
 - [x] Phase 5: YouTube Downloader & AI Voiceover (100%)
 - [x] Phase 6: Smart Cut, Audio Waveforms, Transitions & Adjustment (100%)
-- สิ่งที่เหลือ: Keyframe Engine & Professional Polish (Effects & Stickers)
+- [x] Keyframe Engine & Professional Polish (100%)

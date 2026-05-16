@@ -8,7 +8,7 @@ export interface MediaFile {
   id: string
   name: string
   type: ClipType
-  file: File
+  file?: File
   url: string        // Object URL
   duration: number   // seconds
   thumbnail?: string // Object URL for thumbnail
@@ -19,6 +19,22 @@ export interface MediaFile {
 // Serializable version of MediaFile
 export interface PersistedMediaFile extends Omit<MediaFile, 'file' | 'url'> {
   url?: string // Persistent URL (e.g. Supabase or Backend URL)
+}
+
+export interface Keyframe {
+  id: string
+  time: number // 0 to clip.duration (seconds from clip start)
+  properties: {
+    scaleX?: number
+    scaleY?: number
+    posX?: number
+    posY?: number
+    opacity?: number
+    rotate?: number
+    brightness?: number
+    contrast?: number
+    saturation?: number
+  }
 }
 
 export interface Clip {
@@ -64,6 +80,8 @@ export interface Clip {
   textStrokeColor?: string
   textBg?: string
   textAnimation?: 'none' | 'fade' | 'slide-up' | 'pop'
+  // Keyframes
+  keyframes?: Keyframe[]
 }
 
 export interface Track {
@@ -208,7 +226,7 @@ export const useEditorStore = create<EditorStore>()(
       mediaFiles: [],
       persistedMediaMeta: [],
       addMedia: async (media) => {
-        if (media.file.size > 0) {
+        if (media.file && media.file.size > 0) {
           await saveMediaFile(media.id, media.file)
         }
         set(s => {

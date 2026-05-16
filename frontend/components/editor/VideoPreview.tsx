@@ -447,6 +447,43 @@ export default function VideoPreview() {
 
     const opacity = baseOpacity * fadeAlpha
     
+    // Keyframe Interpolation
+    let kfScaleX = scaleX, kfScaleY = scaleY, kfPosX = posX, kfPosY = posY, kfRotate = rotate, kfOpacity = opacity
+    if (activeClip.keyframes && activeClip.keyframes.length > 0) {
+      const localTime = currentTime - activeClip.startTime
+      const sorted = [...activeClip.keyframes].sort((a,b) => a.time - b.time)
+      
+      let prev = sorted[0]
+      let next = sorted[sorted.length - 1]
+      
+      if (localTime <= prev.time) {
+        prev = next = prev
+      } else if (localTime >= next.time) {
+        prev = next = next
+      } else {
+        for (let i = 0; i < sorted.length - 1; i++) {
+          if (localTime >= sorted[i].time && localTime <= sorted[i+1].time) {
+            prev = sorted[i]
+            next = sorted[i+1]
+            break
+          }
+        }
+      }
+
+      const t = next.time === prev.time ? 1 : (localTime - prev.time) / (next.time - prev.time)
+      const lerp = (a: number|undefined, b: number|undefined, def: number) => {
+        const vA = a ?? def, vB = b ?? def
+        return vA + (vB - vA) * t
+      }
+      
+      kfScaleX = lerp(prev.properties.scaleX, next.properties.scaleX, scaleX * 100) / 100
+      kfScaleY = lerp(prev.properties.scaleY, next.properties.scaleY, scaleY * 100) / 100
+      kfPosX   = lerp(prev.properties.posX,   next.properties.posX,   posX)
+      kfPosY   = lerp(prev.properties.posY,   next.properties.posY,   posY)
+      kfRotate = lerp(prev.properties.rotate, next.properties.rotate, rotate)
+      kfOpacity = lerp(prev.properties.opacity, next.properties.opacity, opacity * 100) / 100
+    }
+
     // Color filters
     const b = (activeClip.brightness ?? 100) / 100
     const c = (activeClip.contrast ?? 100) / 100
@@ -458,8 +495,8 @@ export default function VideoPreview() {
       maxHeight: '100%',
       objectFit: 'contain',
       display: 'block',
-      transform: `translate(${posX}%, ${posY}%) scale(${scaleX}, ${scaleY}) rotate(${rotate}deg)`,
-      opacity,
+      transform: `translate(${kfPosX}%, ${kfPosY}%) scale(${kfScaleX}, ${kfScaleY}) rotate(${kfRotate}deg)`,
+      opacity: kfOpacity,
       filter: filters,
       transition: isPlaying ? 'none' : 'transform 0.05s, opacity 0.05s, filter 0.05s',
     }

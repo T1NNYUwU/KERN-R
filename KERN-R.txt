@@ -14,7 +14,7 @@ KERN-R Studio — สุดยอดโปรแกรมตัดต่อว�
 - 🧩 Snapping Logic: ระบบดูดติดขอบคลิปและ Playhead เพื่อความแม่นยำ
 
 3. ระบบ Canvas & Inspector (Phase 3 — ใหม่):
-- 🎬 Video Transform: ปรับ Scale X/Y, Position X/Y, Opacity, Rotate ได้จาก Inspector panel
+- 🎬 Video Transform: ปรับ Scale- [x] Stabilization: FFmpeg Async rendering, GPU Acceleration (NVENC/MF), Audio Sync/Volume Fix, Pixel-perfect Mapping.
 - 🖼️ Canvas Transform: วิดีโอแสดงผล transform (scale/position/rotate/opacity) บนหน้าจอพรีวิวจริง
 - 📝 Text Styling ขั้นสูง: ปรับ Stroke (ขอบ), Background color, Font Family ได้อย่างอิสระ ไม่มีเงาที่จำกัดสี
 - 🔲 Text Resize Handles: ลากปรับขนาด Text Overlay โดยตรงบน Canvas พร้อมกรอบสีขาวและ Rotate handle แบบ CapCut
@@ -28,22 +28,13 @@ KERN-R Studio — สุดยอดโปรแกรมตัดต่อว�
 - 🌊 Audio Waveforms: แสดงคลื่นเสียงจริงบนไทม์ไลน์ ช่วยให้การตัดต่อแม่นยำตามจังหวะเสียง
 - 🤖 AI Smart Cut: ระบบลบช่วงเงียบอัตโนมัติ (Silence Removal) สำหรับสายทำคลิปพูดคนเดียว
 - 📥 Link Import: ระบบดูดคลิปจาก YouTube / TikTok มาตัดต่อได้ทันทีผ่าน URL
-- ✨ Transitions & Color: ระบบ Fade In/Out และการปรับค่าสี (Brightness, Contrast, Saturation) ที่ใช้งานได้จริงทั้งหน้าเว็บและตอน Export
+- 💎 Pro Keyframe Engine: มาร์คจุด Animation ได้ละเอียดทุกคุณสมบัติ (Scale, Pos, Opacity, Rotate) พร้อมระบบ Interpolation ที่แม่นยำทั้งหน้า Preview และตอน Export
+- 🎬 Transition Library: ระบบเปลี่ยนฉากพื้นฐาน พร้อมการปรับแต่งความสวยงามรายคลิป
+- ⌨️ Professional Shortcuts: รองรับ Space (Play), S (Split), Del (Delete), Ctrl+Z (Undo) เหมือนโปรแกรมระดับโลก
 
 4. สถาปัตยกรรม (อัปเดตล่าสุด):
 - ลบระบบ Electron ออกทั้งหมด เปลี่ยนเป็น Web-Native แบบเต็มตัวเพื่อความรวดเร็วและใช้ขุมพลังเบราว์เซอร์
 - ระบบสร้าง Track อัตโนมัติ (Dynamic Tracks) ไม่ต้องจอง Track ล่วงหน้า
 
-4. ระบบ AI Voice & Subtitles Pro:
-- 🎙️ AI Voiceover (New): รวมระบบ Edge TTS เข้ากับหน้าตัดต่อโดยตรง เลือกเสียงไทย/อังกฤษ และสร้างคลิปลงไทม์ไลน์ได้ทันที
-- 🗣️ Audio Engine: ระบบแยกเสียง (Separate Audio) ที่แม่นยำ พร้อมการควบคุมระดับเสียงแยกรายคลิป
-- ⚙️ Multi-Engine Support: รองรับ edge-tts, Kokoro TTS และ Piper TTS
-
-5. ระบบประมวลผลวิดีโอระดับโปร (Cloud Rendering):
-- ☁️ Backend Export Engine: เปลี่ยนจากการเรนเดอร์บนเบราว์เซอร์ มาเป็นการส่งงานไปเรนเดอร์บน Server (Node.js + FFmpeg)
-- 🎞️ Multi-Layer Render: รองรับการ Overlay วิดีโอ/รูปภาพ, ผสมเสียง และฝังซับไตเติ้ล (Burn-in Text) แบบสมบูรณ์
-- 📊 Progress Tracking: ระบบ Polling เช็คสถานะการเรนเดอร์แบบ Real-time พร้อมดาวน์โหลดอัตโนมัติเมื่อเสร็จ
-- 📦 Supabase Integration: บันทึกวิดีโอที่เรนเดอร์เสร็จแล้วลงบน Cloud Storage (Bucket: assets) ถาวร
-
-สถานะโครงการ: 🚀 V3 Phase 4 เสร็จสิ้น (100%) — ขั้นต่อไป: Phase 5 AI Exclusive Features & Polish
+สถานะโครงการ: 🚀 V3 Production Ready (100%) — ทุกฟีเจอร์ตามแผนงานเสร็จสมบูรณ์
 

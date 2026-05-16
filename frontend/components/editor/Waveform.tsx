@@ -27,6 +27,7 @@ export default function Waveform({ media, color, width, height, trimStart, durat
     const generatePeaks = async () => {
       try {
         const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+        if (!media.file) return
         const arrayBuffer = await media.file.arrayBuffer()
         const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
         

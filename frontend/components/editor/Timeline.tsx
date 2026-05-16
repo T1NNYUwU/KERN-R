@@ -216,28 +216,6 @@ export default function Timeline() {
   const isDraggingPlayhead = useRef(false)
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, clip: Clip } | null>(null)
 
-  // ── Auto-scroll logic ──────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!isPlaying || isDraggingPlayhead.current || !rulerAreaRef.current) return
-    
-    const container = rulerAreaRef.current
-    const playheadAbsoluteX = LABEL_W + (currentTime * zoom)
-    const scrollLeft = container.scrollLeft
-    const viewportW = container.clientWidth
-
-    // If playhead goes beyond the right edge, or is dragged past the left edge, scroll to center it
-    if (playheadAbsoluteX > scrollLeft + viewportW - 50 || playheadAbsoluteX < scrollLeft + LABEL_W) {
-       container.scrollLeft = playheadAbsoluteX - (viewportW / 2)
-    }
-  }, [currentTime, isPlaying, zoom])
-
-  // Close context menu when clicking outside
-  useEffect(() => {
-    const fn = () => setContextMenu(null)
-    window.addEventListener('click', fn)
-    return () => window.removeEventListener('click', fn)
-  }, [])
-
   // ── Smart Split Logic ───────────────────────────────────────────────────────
   const handleSmartSplit = useCallback(() => {
     const s = useEditorStore.getState()
@@ -271,6 +249,55 @@ export default function Timeline() {
       s.splitClip(targetId, t)
     }
   }, [])
+
+  // ── Auto-scroll logic ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isPlaying || isDraggingPlayhead.current || !rulerAreaRef.current) return
+    
+    const container = rulerAreaRef.current
+    const playheadAbsoluteX = LABEL_W + (currentTime * zoom)
+    const scrollLeft = container.scrollLeft
+    const viewportW = container.clientWidth
+
+    // If playhead goes beyond the right edge, or is dragged past the left edge, scroll to center it
+    if (playheadAbsoluteX > scrollLeft + viewportW - 50 || playheadAbsoluteX < scrollLeft + LABEL_W) {
+       container.scrollLeft = playheadAbsoluteX - (viewportW / 2)
+    }
+  }, [currentTime, isPlaying, zoom])
+
+  // Close context menu when clicking outside
+  useEffect(() => {
+    const fn = () => setContextMenu(null)
+    window.addEventListener('click', fn)
+    return () => window.removeEventListener('click', fn)
+  }, [])
+
+
+  // ── Keyboard Shortcuts ─────────────────────────────────────────────────────
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in input or textarea
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return
+
+      if (e.code === 'Space') {
+        e.preventDefault()
+        setIsPlaying(!isPlaying)
+      }
+      if (e.code === 'Delete' || e.code === 'Backspace') {
+        if (selectedClipId) removeClip(selectedClipId)
+      }
+      if (e.code === 'KeyS') {
+        handleSmartSplit()
+      }
+      if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault()
+        if (e.shiftKey) redo()
+        else undo()
+      }
+    }
+    window.addEventListener('keydown', fn)
+    return () => window.removeEventListener('keydown', fn)
+  }, [isPlaying, setIsPlaying, handleSmartSplit, removeClip, selectedClipId, undo, redo])
 
   // ── Keyboard shortcuts ──────────────────────────────────────────────────────
   useEffect(() => {

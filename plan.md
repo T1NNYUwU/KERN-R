@@ -46,17 +46,16 @@
 - [x] Burn-in Text (ฝังข้อความลงในวิดีโอ) และ Audio Mixing
 - [x] ระบบ Cloud Rendering ส่งงานไปทำบน Backend และแจ้งผลกลับทางหน้าเว็บ (Polling)
 
-### 🟡 Phase 5: KERN-R Exclusive Features & AI
-- [ ] **AI Voiceover (Text to Speech):** เชื่อมต่อกับ Edge TTS / OpenAI สำหรับทำเสียงพากย์
-- [ ] **YouTube/TikTok Downloader:** ระบบดึงคลิปจาก Link มาตัดต่อได้ทันที
+- [x] **AI Voiceover (Text to Speech):** เชื่อมต่อกับ Edge TTS / OpenAI สำหรับทำเสียงพากย์
+- [x] **YouTube/TikTok Downloader:** ระบบดึงคลิปจาก Link มาตัดต่อได้ทันที
 - [ ] **AI Remove Background:** ระบบลบพื้นหลังวิดีโอ (Green Screen / Subject Removal)
 
 ### 🔵 Phase 6: Professional Polish (CapCut Feel)
-- [ ] **Audio Waveforms:** แสดงคลื่นเสียงบนไทม์ไลน์เพื่อให้ตัดต่อตามจังหวะได้แม่นยำ
-- [ ] **Video Transitions:** ระบบ Transition พื้นฐาน (Fade, Cross Dissolve, Slide)
-- [ ] **Keyframes (v1):** ปรับแต่งการเคลื่อนที่ (Motion) ของคลิปและตัวหนังสือผ่านจุด Keyframe
-- [ ] **Color Adjustment:** ปรับ Brightness, Contrast, Saturation ในหน้า Inspector
-- [ ] Smart Cut (ลบช่วงที่เงียบหรือไม่มีเสียงพูดอัตโนมัติ)
+- [x] **Audio Waveforms:** แสดงคลื่นเสียงบนไทม์ไลน์เพื่อให้ตัดต่อตามจังหวะได้แม่นยำ
+- [ ] **Video Transitions:** ระบบ Transition พื้นฐาน (Fade, Cross Dissolve, Slide) - กำลังทำ
+- [x] **Keyframes (v1):** ปรับแต่งการเคลื่อนที่ (Motion) ของคลิปและตัวหนังสือผ่านจุด Keyframe
+- [x] **Color Adjustment:** ปรับ Brightness, Contrast, Saturation ในหน้า Inspector
+- [x] **Smart Cut:** (ลบช่วงที่เงียบหรือไม่มีเสียงพูดอัตโนมัติ)
 
 ---
 

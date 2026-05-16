@@ -6,7 +6,7 @@ import {
   Download, MousePointer2, Scissors, Trash2, 
   Undo2, Redo2, Monitor, LayoutTemplate, 
   Type, Music, Image as ImageIcon, FolderClosed,
-  Settings, User, HelpCircle, Layers
+  Settings, User, HelpCircle, Layers, Sparkles
 } from 'lucide-react'
 
 const MediaBin    = dynamic(() => import('../components/editor/MediaBin'),    { ssr: false })
@@ -14,6 +14,7 @@ const VideoPreview = dynamic(() => import('../components/editor/VideoPreview'), 
 const Timeline    = dynamic(() => import('../components/editor/Timeline'),    { ssr: false })
 const TextLibrary = dynamic(() => import('../components/editor/TextLibrary'), { ssr: false })
 const AudioLibrary = dynamic(() => import('../components/editor/AudioLibrary'), { ssr: false })
+const TransitionLibrary = dynamic(() => import('../components/editor/TransitionLibrary'), { ssr: false })
 const Inspector   = dynamic(() => import('../components/editor/Inspector'),   { ssr: false })
 
 export default function EditorPage() {
@@ -46,8 +47,9 @@ export default function EditorPage() {
     { id: 'media', icon: FolderClosed, label: 'Media' },
     { id: 'audio', icon: Music, label: 'Audio' },
     { id: 'text', icon: Type, label: 'Text' },
+    { id: 'transitions', icon: Layers, label: 'Transitions' },
     { id: 'elements', icon: LayoutTemplate, label: 'Elements' },
-    { id: 'effects', icon: Layers, label: 'Effects' },
+    { id: 'effects', icon: Sparkles, label: 'Effects' },
   ]
 
   return (
@@ -274,6 +276,8 @@ export default function EditorPage() {
                   <TextLibrary />
                 ) : activeTab === 'audio' ? (
                   <AudioLibrary />
+                ) : activeTab === 'transitions' ? (
+                  <TransitionLibrary />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-zinc-600 text-xs font-medium">
                     Coming Soon

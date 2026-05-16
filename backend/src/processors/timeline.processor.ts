@@ -91,31 +91,33 @@ export class TimelineProcessor {
         const trimStart = clip.trimStart || 0;
         const outLabel = `v${i}`;
         
-        // Scale, Trim and Fades
-        const scale = (clip.scaleX ?? 100) / 100;
-        const opacity = (clip.opacity ?? 100) / 100;
+        // Scale, Trim and Fades (Support Keyframes)
+        const scaleExpr = this.getKFExpr(clip.keyframes, 'scaleX', clip.scaleX ?? 100, 0) + '/100';
+        const opacityExpr = this.getKFExpr(clip.keyframes, 'opacity', clip.opacity ?? 100, 0) + '/100';
 
-        let vfilters = `trim=start=${trimStart}:duration=${clip.duration},setpts=PTS-STARTPTS,scale=w=iw*${scale}:h=-1:flags=fast_bilinear`;
+        let vfilters = `trim=start=${trimStart}:duration=${clip.duration},setpts=PTS-STARTPTS,scale=w=iw*${scaleExpr}:h=-1:flags=fast_bilinear`;
         
-        if (opacity < 1) vfilters += `,format=rgba,colorchannelmixer=aa=${opacity}`;
+        if (clip.opacity !== 100 || clip.keyframes?.some(k => k.properties.opacity !== undefined)) {
+          vfilters += `,format=rgba,colorchannelmixer=aa='${opacityExpr}'`;
+        }
         if (clip.fadeIn)  vfilters += `,fade=t=in:st=0:d=${clip.fadeIn}`;
         if (clip.fadeOut) vfilters += `,fade=t=out:st=${clip.duration - clip.fadeOut}:d=${clip.fadeOut}`;
         
-        // Color EQ (Brightness/Contrast/Saturation)
-        const bright = Math.min(Math.max(((clip.brightness ?? 100) - 100) / 100, -1), 1);
-        const contrast = Math.min(Math.max((clip.contrast ?? 100) / 100, 0), 10);
-        const saturation = Math.min(Math.max((clip.saturation ?? 100) / 100, 0), 3);
-        if (bright !== 0 || contrast !== 1 || saturation !== 1) {
-          vfilters += `,eq=brightness=${bright}:contrast=${contrast}:saturation=${saturation}`;
-        }
+        // Color EQ (Brightness/Contrast/Saturation) - Support Keyframes
+        const bKF = `(${this.getKFExpr(clip.keyframes, 'brightness', clip.brightness ?? 100, clip.startTime)}-100)/100`;
+        const cKF = `${this.getKFExpr(clip.keyframes, 'contrast', clip.contrast ?? 100, clip.startTime)}/100`;
+        const sKF = `${this.getKFExpr(clip.keyframes, 'saturation', clip.saturation ?? 100, clip.startTime)}/100`;
+        
+        vfilters += `,eq=brightness='${bKF}':contrast='${cKF}':saturation='${sKF}'`;
         
         filterComplex += `[${inputIdx}:v]${vfilters}[v_proc${i}];`;
         
         // Overlay with position (posX/posY are % of clip's own size in CSS translate)
-        const px = (clip.posX ?? 0) / 100;
-        const py = (clip.posY ?? 0) / 100;
-        const xPos = `(W-w)/2+(w*${px})`;
-        const yPos = `(H-h)/2+(h*${py})`;
+        const pxExpr = this.getKFExpr(clip.keyframes, 'posX', clip.posX ?? 0, clip.startTime) + '/100';
+        const pyExpr = this.getKFExpr(clip.keyframes, 'posY', clip.posY ?? 0, clip.startTime) + '/100';
+        
+        const xPos = `(W-w)/2+(w*${pxExpr})`;
+        const yPos = `(H-h)/2+(h*${pyExpr})`;
         
         filterComplex += `[${lastVideoLabel}][v_proc${i}]overlay=x='${xPos}':y='${yPos}':enable='between(t,${clip.startTime},${clip.startTime + clip.duration})'[${outLabel}];`;
         lastVideoLabel = outLabel;
@@ -210,14 +212,36 @@ export class TimelineProcessor {
       await this.supabaseService.updateJobStatus(id, 'FAILED', 0);
       throw error;
     } finally {
-      // Do not cleanup immediately if we need to serve the local file!
-      // We will cleanup in a delayed task or let the cleanup endpoint handle it
-      // For now, keep it for 10 minutes
+      // Keep files for 10 minutes for serving/debugging, then cleanup
       setTimeout(() => {
         try {
+          const tempDir = path.join(process.cwd(), 'temp', id);
           if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
         } catch (e) {}
       }, 600000); 
     }
+  }
+
+  private getKFExpr(keyframes: any[], prop: string, defaultValue: number, startTime: number): string {
+    if (!keyframes || keyframes.length === 0) return defaultValue.toString();
+    const sorted = [...keyframes].sort((a, b) => a.time - b.time);
+    const t = `(t-${startTime})`; 
+    
+    let expr = (sorted[0].properties[prop] ?? defaultValue).toString();
+    
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const k1 = sorted[i];
+      const k2 = sorted[i+1];
+      const v1 = k1.properties[prop] ?? defaultValue;
+      const v2 = k2.properties[prop] ?? defaultValue;
+      
+      const segment = `(${v1}+(${v2-v1})*(${t}-${k1.time})/(${k2.time}-${k1.time}))`;
+      expr = `if(between(${t},${k1.time},${k2.time}),${segment},${expr})`;
+    }
+    
+    const lastVal = sorted[sorted.length - 1].properties[prop] ?? defaultValue;
+    expr = `if(gt(${t},${sorted[sorted.length-1].time}),${lastVal},${expr})`;
+    
+    return expr;
   }
 }
