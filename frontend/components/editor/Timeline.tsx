@@ -5,7 +5,7 @@ import {
   Play, Pause, MousePointer2, Scissors, 
   Trash2, Undo2, Redo2, ZoomOut, ZoomIn, 
   Volume2, VolumeX, Eye, EyeOff, Plus,
-  SplitSquareHorizontal, Magnet
+  SplitSquareHorizontal, Magnet, Monitor, Music, Type
 } from 'lucide-react'
 import Waveform from './Waveform'
 
@@ -32,10 +32,10 @@ function fmtTimeFull(s: number) {
 const SNAP_THRESHOLD_PX = 10
 
 function trackBg(type: string) {
-  if (type === 'video' || type === 'image') return { track: '#1e1e24', clip: '#4a42b1', border: '#ffffff', wave: '#5945d8' }
-  if (type === 'audio')                     return { track: '#1e1e24', clip: '#0c877f', border: '#ffffff', wave: '#1ca097' }
-  if (type === 'text')                      return { track: '#1e1e24', clip: '#b14242', border: '#ffffff', wave: '#d85945' }
-  return                                    { track: '#1e1e24', clip: '#666666', border: '#ffffff', wave: '#888888' }
+  if (type === 'video' || type === 'image') return { track: '#1e1e22', clip: '#2c56f5', border: '#ffffff', wave: '#5c7fff' }
+  if (type === 'audio')                     return { track: '#1e1e22', clip: '#00a870', border: '#ffffff', wave: '#33cc99' }
+  if (type === 'text')                      return { track: '#1e1e22', clip: '#ff6b00', border: '#ffffff', wave: '#ff9c54' }
+  return                                    { track: '#1e1e22', clip: '#666666', border: '#ffffff', wave: '#888888' }
 }
 
 // ── ClipBlock (self-contained drag/resize) ────────────────────────────────────
@@ -394,57 +394,6 @@ export default function Timeline() {
   return (
     <div className="flex-1 flex flex-col w-full h-full bg-[#121215] select-none relative z-10 overflow-hidden text-sm">
 
-      {/* ── Timeline Toolbar (CapCut Online Style) ───────────────────────────────── */}
-      <div className="h-11 shrink-0 bg-[#16161a] border-b border-[#25252b] flex items-center px-4 justify-between select-none relative">
-        
-        {/* Left: Tools */}
-        <div className="flex items-center gap-5 text-[#909099]">
-          <div className="flex items-center gap-4">
-            <button className="hover:text-white transition-colors"><Undo2 className="w-[18px] h-[18px]" onClick={undo} /></button>
-            <button className="hover:text-white transition-colors"><Redo2 className="w-[18px] h-[18px]" onClick={redo} /></button>
-          </div>
-          <div className="w-px h-3.5 bg-[#3a3a42]"></div>
-          <div className="flex items-center gap-4">
-            <button onClick={handleSmartSplit} className={`hover:text-white transition-colors`} title="Split (Ctrl+B)">
-              <SplitSquareHorizontal className="w-[18px] h-[18px]" />
-            </button>
-            <button onClick={() => selectedClipId && removeClip(selectedClipId)} className={`hover:text-white transition-colors ${!selectedClipId && 'opacity-40 cursor-not-allowed'}`} title="Delete (Del)">
-              <Trash2 className="w-[18px] h-[18px]" />
-            </button>
-          </div>
-        </div>
-
-        {/* Center: Playback Controls */}
-        <div className="flex items-center gap-4 absolute left-1/2 -translate-x-1/2">
-          <button onClick={() => setIsPlaying(!isPlaying)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-white/10 text-white transition-colors">
-            {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
-          </button>
-          <div className="font-mono text-[13px] font-medium text-white tracking-widest flex items-center">
-            {fmtTimeFull(currentTime)} <span className="text-[#606068] mx-1">/</span> <span className="text-[#909099]">{fmtTimeFull(totalDuration)}</span>
-          </div>
-        </div>
-
-        {/* Right: Zoom Controls */}
-        <div className="flex items-center gap-5 text-[#909099]">
-          <button 
-            onClick={() => {
-               // Future: implement magnetic logic in store
-               alert("Magnetic Timeline is currently set to 'Manual' for maximum flexibility. Snap-to-grid is always active.")
-            }}
-            className="hover:text-white transition-colors flex items-center gap-1.5" 
-            title="Magnetic Timeline (Auto-Snap)"
-          >
-            <Magnet className="w-4 h-4 text-[#3b82f6]" />
-          </button>
-          <div className="w-px h-3.5 bg-[#3a3a42]"></div>
-          <div className="flex items-center gap-2.5">
-            <button onClick={() => setZoom(zoom - 10)} className="hover:text-white transition-colors"><ZoomOut className="w-[18px] h-[18px]" /></button>
-            <input type="range" min={15} max={400} value={zoom} onChange={e => setZoom(Number(e.target.value))} 
-              className="w-24 h-1 bg-[#25252b] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full" />
-            <button onClick={() => setZoom(zoom + 10)} className="hover:text-white transition-colors"><ZoomIn className="w-[18px] h-[18px]" /></button>
-          </div>
-        </div>
-      </div>
 
       {/* ── Scrollable ruler + tracks area ──────────────────────────────────── */}
       <div
@@ -489,16 +438,23 @@ export default function Timeline() {
                   <div className="shrink-0 sticky left-0 z-30 flex items-center justify-center bg-[#16161a] border-r border-[#25252b] relative group/header"
                     style={{ width: LABEL_W }}>
                     
-                    <button
-                      onClick={() => useEditorStore.getState().updateTrack(track.id, { muted: !track.muted })}
-                      className={`w-7 h-7 rounded flex items-center justify-center transition-colors ${track.muted ? 'text-[#606068]' : 'text-[#c1c1c8] hover:text-white hover:bg-white/5'}`}
-                      title={track.muted ? "Unmute Track" : "Mute Track"}
-                    >
-                      {track.type === 'video' || track.type === 'image' || track.type === 'text' 
-                        ? (track.muted ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />)
-                        : (track.muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />)
-                      }
-                    </button>
+                    <div className="flex flex-col items-center gap-1.5">
+                      <div className="text-zinc-500">
+                        {track.type === 'video' ? <Monitor className="w-3.5 h-3.5" /> : 
+                         track.type === 'audio' ? <Music className="w-3.5 h-3.5" /> : 
+                         <Type className="w-3.5 h-3.5" />}
+                      </div>
+                      <button
+                        onClick={() => useEditorStore.getState().updateTrack(track.id, { muted: !track.muted })}
+                        className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${track.muted ? 'text-[#ff4d4f]' : 'text-[#c1c1c8] hover:text-white hover:bg-white/5'}`}
+                        title={track.muted ? "Unmute Track" : "Mute Track"}
+                      >
+                        {track.type === 'video' || track.type === 'image' || track.type === 'text' 
+                          ? (track.muted ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />)
+                          : (track.muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />)
+                        }
+                      </button>
+                    </div>
 
                     <button 
                       onClick={() => {

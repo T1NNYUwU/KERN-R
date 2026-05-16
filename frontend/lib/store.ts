@@ -101,13 +101,14 @@ export interface HistoryEntry {
 interface EditorStore {
   // Initialization
   isInitialized: boolean
-  initStore: () => Promise<void>
+  userId: string | null
+  initStore: (userId: string) => Promise<void>
 
   // Media library
   mediaFiles: MediaFile[]
   persistedMediaMeta: PersistedMediaFile[]
-  addMedia: (file: MediaFile) => Promise<void>
-  removeMedia: (id: string) => Promise<void>
+  addMedia: (media: MediaFile, userId: string) => Promise<void>
+  removeMedia: (id: string, userId: string) => Promise<void>
 
   // Tracks
   tracks: Track[]
@@ -157,25 +158,36 @@ export const useEditorStore = create<EditorStore>()(
   persist(
     (set, get) => ({
       isInitialized: false,
-      initStore: async () => {
-        if (get().isInitialized) return
+      userId: null,
+      initStore: async (userId: string) => {
+        // Handle User Switch: If the stored userId is different, clear the state
+        if (get().userId && get().userId !== userId) {
+          set({
+            tracks: [],
+            clips: [],
+            mediaFiles: [],
+            persistedMediaMeta: [],
+            totalDuration: 10,
+            selectedClipId: null,
+            history: [],
+            historyIndex: -1,
+            isInitialized: false
+          })
+        }
+
+        if (get().isInitialized && get().userId === userId) return
         
         // Restore media files from IndexedDB
         const { persistedMediaMeta } = get()
         const loadedMedia: MediaFile[] = []
         
-        // Get all DB keys to find dangling files
-        const allDbIds = await getAllMediaIds()
-        const validIds = new Set(persistedMediaMeta.map(m => m.id))
-        
         for (const meta of persistedMediaMeta) {
           try {
-            const file = await getMediaFile(meta.id)
+            const file = await getMediaFile(userId, meta.id)
             if (file) {
               const url = (meta.url && meta.url.startsWith('http')) ? meta.url : URL.createObjectURL(file)
               loadedMedia.push({ ...meta, file, url })
             } else if (meta.url && meta.url.startsWith('http')) {
-              // Remote file only
               loadedMedia.push({
                 ...meta,
                 file: new File([], meta.name),
@@ -220,14 +232,14 @@ export const useEditorStore = create<EditorStore>()(
           set({ tracks: fixedTracks, clips: fixedClips })
         }
 
-        set({ mediaFiles: loadedMedia, isInitialized: true })
+        set({ mediaFiles: loadedMedia, isInitialized: true, userId })
       },
 
       mediaFiles: [],
       persistedMediaMeta: [],
-      addMedia: async (media) => {
+      addMedia: async (media, userId) => {
         if (media.file && media.file.size > 0) {
-          await saveMediaFile(media.id, media.file)
+          await saveMediaFile(userId, media.id, media.file)
         }
         set(s => {
           const { file, ...metaWithUrl } = media
@@ -241,10 +253,9 @@ export const useEditorStore = create<EditorStore>()(
           }
         })
       },
-      removeMedia: async (id) => {
-        await deleteMediaFile(id)
+      removeMedia: async (id, userId) => {
+        await deleteMediaFile(userId, id)
         set(s => {
-          // Free memory by revoking object URL
           const mediaToRemove = s.mediaFiles.find(m => m.id === id)
           if (mediaToRemove?.url) URL.revokeObjectURL(mediaToRemove.url)
 
@@ -380,13 +391,14 @@ export const useEditorStore = create<EditorStore>()(
     set({ ...entry, historyIndex: historyIndex + 1, totalDuration: calcDuration(entry.clips) })
   },
 }), {
-  name: 'editor-storage-v3',
+  name: 'editor-storage-v3-multiuser',
   storage: createJSONStorage(() => localStorage),
   partialize: (state) => ({
     tracks: state.tracks,
     clips: state.clips,
     totalDuration: state.totalDuration,
-    persistedMediaMeta: state.persistedMediaMeta
+    persistedMediaMeta: state.persistedMediaMeta,
+    userId: state.userId
   })
 }))
 

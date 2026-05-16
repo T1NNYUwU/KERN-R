@@ -5,6 +5,8 @@ import {
   Move, RotateCcw, Type, AlignLeft, Palette, Image as ImageIcon,
   Scissors, Zap, Loader2, Diamond
 } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import { toast } from 'sonner'
 
 const FONT_FAMILIES = [
   'Inter', 'System', 'Roboto', 'Kanit', 'Prompt', 'Sarabun',
@@ -49,8 +51,9 @@ function SliderRow({
 }
 
 export default function Inspector() {
+  const { user } = useAuth()
   const clip = useEditorStore(s => s.clips.find(c => c.id === s.selectedClipId))
-  const { updateClip, splitClip, removeClip, clips } = useEditorStore()
+  const { updateClip, splitClip, removeClip, clips, addMedia, addClip, addTrack, tracks } = useEditorStore()
   const mediaFiles = useEditorStore(s => s.mediaFiles)
   const [isProcessing, setIsProcessing] = useState(false)
   const [mainTab, setMainTab] = useState('Text')
@@ -104,15 +107,15 @@ export default function Inspector() {
                    ['Audio', 'Speed']
 
   return (
-    <div className="flex flex-col h-full bg-[#121215] text-white">
+    <div className="flex flex-col h-full bg-transparent text-white">
       
-      <div className="flex items-center px-4 pt-2 border-b border-[#25252b] overflow-x-auto custom-scrollbar shrink-0">
+      <div className="flex items-center px-4 pt-1 border-b border-white/5 overflow-x-auto custom-scrollbar shrink-0">
         {mainTabs.map(tab => (
           <button
             key={tab}
             onClick={() => { setMainTab(tab); setSubTab('Basic') }}
-            className={`px-4 py-2 text-[13px] font-medium whitespace-nowrap border-b-2 transition-colors ${
-              mainTab === tab ? 'text-white border-white' : 'text-[#8a8a93] border-transparent hover:text-[#c1c1c8]'
+            className={`px-3 py-2 text-[12px] font-bold whitespace-nowrap border-b-2 transition-all ${
+              mainTab === tab ? 'text-white border-white' : 'text-zinc-500 border-transparent hover:text-zinc-300'
             }`}
           >
             {tab}
@@ -123,13 +126,13 @@ export default function Inspector() {
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         
         {mainTab === 'Text' && isText && (
-          <div className="flex items-center mx-4 mt-4 bg-[#1a1a1f] p-1 rounded-lg">
+          <div className="flex items-center px-4 py-3 gap-4 border-b border-white/5">
             {['Basic', 'Bubble', 'Effects'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setSubTab(tab)}
-                className={`flex-1 py-1.5 text-[12px] font-medium rounded-md transition-colors ${
-                  subTab === tab ? 'bg-[#2a2a35] text-white' : 'text-[#8a8a93] hover:text-[#c1c1c8]'
+                className={`text-[11px] font-bold transition-colors ${
+                  subTab === tab ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
                 }`}
               >
                 {tab}
@@ -235,17 +238,25 @@ export default function Inspector() {
                             body: JSON.stringify({ text: clip.text, engine })
                           })
                           const data = await res.json()
-                          if (data.url) {
-                            const store = useEditorStore.getState()
-                            store.addMedia({ id: data.id, name: data.name, type: 'audio', url: data.url, duration: data.duration })
-                            let audioTrack = store.tracks.find(t => t.type === 'audio')
-                            if (!audioTrack) { store.addTrack('audio'); audioTrack = useEditorStore.getState().tracks.find(t => t.type === 'audio') }
-                            store.addClip({ id: `tts-${Date.now()}`, mediaId: data.id, type: 'audio', trackId: audioTrack?.id || 'track-1', startTime: clip.startTime, duration: data.duration, trimStart: 0, trimEnd: 0, name: data.name, volume: 0 })
+                          if (data.url && user?.id) {
+                            await addMedia({ id: data.id, name: data.name, type: 'audio', url: data.url, duration: data.duration }, user.id)
+                            let audioTrack = tracks.find(t => t.type === 'audio')
+                            if (!audioTrack) { 
+                              const newTrackId = addTrack('audio')
+                              audioTrack = { id: newTrackId } as any
+                            }
+                            addClip({ id: `tts-${Date.now()}`, mediaId: data.id, type: 'audio', trackId: audioTrack?.id || 'track-1', startTime: clip.startTime, duration: data.duration, trimStart: 0, trimEnd: 0, name: data.name, volume: 1 })
+                            toast.success('AI Voiceover generated!')
                           }
-                        } catch (e) { console.error(e); alert('TTS Generation failed') } finally { setIsGeneratingTTS(false) }
+                        } catch (e) { 
+                          console.error(e)
+                          toast.error('TTS Generation failed') 
+                        } finally { 
+                          setIsGeneratingTTS(false) 
+                        }
                       }}
                       disabled={isGeneratingTTS || !clip.text}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white text-[13px] font-bold transition-all shadow-lg shadow-indigo-900/20"
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 disabled:from-zinc-800 disabled:to-zinc-800 disabled:text-zinc-600 text-white text-[13px] font-black uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(79,70,229,0.2)] hover:shadow-[0_0_25px_rgba(79,70,229,0.4)] active:scale-95"
                     >
                       {isGeneratingTTS ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-current" />}
                       {isGeneratingTTS ? 'Generating...' : 'Text to Speech'}
@@ -308,7 +319,7 @@ export default function Inspector() {
                     <div className="flex items-center gap-2 text-indigo-400"><Zap className="w-4 h-4 fill-current" /><span className="text-[13px] font-bold uppercase tracking-wider">AI Smart Tools</span></div>
                     <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4 space-y-3">
                       <p className="text-[11px] text-zinc-400 leading-relaxed">Smart Cut automatically detects and removes silent gaps in your video or audio, making it more engaging.</p>
-                      <button disabled={isProcessing} onClick={async () => { const media = mediaFiles.find(m => m.id === clip.mediaId); if (!media || !media.file) return; setIsProcessing(true); try { const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)(); const buffer = await media.file.arrayBuffer(); const audioBuffer = await audioCtx.decodeAudioData(buffer); const data = audioBuffer.getChannelData(0); const sampleRate = audioBuffer.sampleRate; const threshold = 0.02; const minSilenceLen = 0.5 * sampleRate; const segments: { start: number; end: number }[] = []; let inSound = false; let soundStart = 0; let silenceCount = 0; for (let i = 0; i < data.length; i++) { const amplitude = Math.abs(data[i]); if (amplitude > threshold) { if (!inSound) { inSound = true; soundStart = i; } silenceCount = 0; } else { if (inSound) { silenceCount++; if (silenceCount > minSilenceLen) { segments.push({ start: soundStart / sampleRate, end: (i - silenceCount) / sampleRate }); inSound = false; } } } } if (inSound) segments.push({ start: soundStart / sampleRate, end: data.length / sampleRate }); const clipSourceStart = clip.trimStart; const clipSourceEnd = clip.trimStart + clip.duration; const activeSegments = segments.filter(s => s.end > clipSourceStart && s.start < clipSourceEnd); if (activeSegments.length <= 1) { alert("No significant silence found to cut."); } else { let currentTimelineX = clip.startTime; activeSegments.forEach((seg, idx) => { const segStart = Math.max(seg.start, clipSourceStart); const segEnd = Math.min(seg.end, clipSourceEnd); const dur = segEnd - segStart; if (dur > 0.1) { const newClip = { ...clip, id: `clip-${Date.now()}-${idx}`, startTime: currentTimelineX, duration: dur, trimStart: segStart }; useEditorStore.getState().addClip(newClip); currentTimelineX += dur; } }); removeClip(clip.id); } audioCtx.close(); } catch (e) { console.error(e); alert("Smart Cut failed"); } finally { setIsProcessing(false); } }} className={`w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-xs font-bold transition-all ${isProcessing ? 'bg-zinc-800 text-zinc-600' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 active:scale-95'}`}>{isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Scissors className="w-3.5 h-3.5" />} {isProcessing ? 'Processing...' : 'Apply Smart Cut'}</button>
+                      <button disabled={isProcessing} onClick={async () => { const media = mediaFiles.find(m => m.id === clip.mediaId); if (!media || !media.file) return; setIsProcessing(true); try { const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)(); const buffer = await media.file.arrayBuffer(); const audioBuffer = await audioCtx.decodeAudioData(buffer); const data = audioBuffer.getChannelData(0); const sampleRate = audioBuffer.sampleRate; const threshold = 0.02; const minSilenceLen = 0.5 * sampleRate; const segments: { start: number; end: number }[] = []; let inSound = false; let soundStart = 0; let silenceCount = 0; for (let i = 0; i < data.length; i++) { const amplitude = Math.abs(data[i]); if (amplitude > threshold) { if (!inSound) { inSound = true; soundStart = i; } silenceCount = 0; } else { if (inSound) { silenceCount++; if (silenceCount > minSilenceLen) { segments.push({ start: soundStart / sampleRate, end: (i - silenceCount) / sampleRate }); inSound = false; } } } } if (inSound) segments.push({ start: soundStart / sampleRate, end: data.length / sampleRate }); const clipSourceStart = clip.trimStart; const clipSourceEnd = clip.trimStart + clip.duration; const activeSegments = segments.filter(s => s.end > clipSourceStart && s.start < clipSourceEnd); if (activeSegments.length <= 1) { toast.info("No significant silence found to cut."); } else { let currentTimelineX = clip.startTime; activeSegments.forEach((seg, idx) => { const segStart = Math.max(seg.start, clipSourceStart); const segEnd = Math.min(seg.end, clipSourceEnd); const dur = segEnd - segStart; if (dur > 0.1) { const newClip = { ...clip, id: `clip-${Date.now()}-${idx}`, startTime: currentTimelineX, duration: dur, trimStart: segStart }; useEditorStore.getState().addClip(newClip); currentTimelineX += dur; } }); removeClip(clip.id); toast.success(`Smart Cut applied! Created ${activeSegments.length} clips.`); } audioCtx.close(); } catch (e) { console.error(e); toast.error("Smart Cut failed"); } finally { setIsProcessing(false); } }} className={`w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-xs font-bold transition-all ${isProcessing ? 'bg-zinc-800 text-zinc-600' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 active:scale-95'}`}>{isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Scissors className="w-3.5 h-3.5" />} {isProcessing ? 'Processing...' : 'Apply Smart Cut'}</button>
                     </div>
                   </div>
                 </div>

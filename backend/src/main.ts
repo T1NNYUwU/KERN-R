@@ -10,7 +10,8 @@ async function bootstrap() {
     credentials: true,
   });
   const port = process.env.PORT ?? 3005;
-  await app.listen(port, '127.0.0.1');
-  console.log(`Backend is running on: http://127.0.0.1:${port}`);
+  // Use 0.0.0.0 to allow external connections (crucial for Docker/Cloud deployment)
+  await app.listen(port, '0.0.0.0');
+  console.log(`Backend is running on port: ${port}`);
 }
 bootstrap();

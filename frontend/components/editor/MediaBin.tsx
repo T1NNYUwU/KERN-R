@@ -1,86 +1,101 @@
 'use client'
 import { useRef, useCallback, useState } from 'react'
-import { useEditorStore, MediaFile, makeClipId, Clip } from '../../lib/store'
-import { Film, Music, Image as ImageIcon, Plus, Trash2, Import, UploadCloud, Sparkles, Link as LinkIcon, Globe, Loader2 } from 'lucide-react'
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function getMediaDuration(file: File): Promise<number> {
-  return new Promise(resolve => {
-    const el = document.createElement(file.type.startsWith('audio') ? 'audio' : 'video') as HTMLVideoElement
-    const url = URL.createObjectURL(file)
-    
-    const timeoutId = setTimeout(() => {
-      URL.revokeObjectURL(url)
-      resolve(10) // Fallback to 10s if browser hangs
-    }, 2000)
-
-    el.preload = 'metadata'
-    el.onloadedmetadata = () => { 
-      clearTimeout(timeoutId)
-      if (el.duration === Infinity || isNaN(el.duration)) {
-        el.currentTime = Number.MAX_SAFE_INTEGER
-        el.ontimeupdate = () => {
-          el.ontimeupdate = null
-          el.currentTime = 0
-          resolve(el.duration && !isNaN(el.duration) ? el.duration : 10)
-          URL.revokeObjectURL(url)
-        }
-      } else {
-        URL.revokeObjectURL(url)
-        resolve(el.duration && !isNaN(el.duration) ? el.duration : 10)
-      }
-    }
-    el.onerror = () => { 
-      clearTimeout(timeoutId)
-      URL.revokeObjectURL(url)
-      resolve(10) 
-    }
-    el.src = url
-    el.load()
-  })
-}
-
-function captureThumb(url: string): Promise<string> {
-  return new Promise(resolve => {
-    const video = document.createElement('video')
-    video.preload = 'metadata'
-    video.muted = true
-    video.playsInline = true
-    video.onloadeddata = () => {
-      video.currentTime = Math.min(0.5, video.duration * 0.1)
-    }
-    video.onseeked = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = 240
-      canvas.height = Math.round((video.videoHeight / video.videoWidth) * 240) || 135
-      canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height)
-      resolve(canvas.toDataURL('image/jpeg', 0.6))
-    }
-    video.onerror = () => resolve('')
-    video.src = url
-  })
-}
+import { useEditorStore, MediaFile, Clip, makeClipId } from '../../lib/store'
+import { 
+  UploadCloud, Film, Music, Image as ImageIcon, 
+  Trash2, Plus, Globe, Loader2, Sparkles, Import
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { useAuth } from '../../contexts/AuthContext'
 
 function fmtDur(s: number) {
-  if (!isFinite(s)) return '0:00'
   const m = Math.floor(s / 60)
   const sec = Math.floor(s % 60)
   return `${m}:${String(sec).padStart(2, '0')}`
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+async function getMediaDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file)
+    if (file.type.startsWith('video')) {
+      const v = document.createElement('video')
+      v.src = url
+      v.onloadedmetadata = () => resolve(v.duration)
+      v.onerror = () => resolve(10)
+    } else if (file.type.startsWith('audio')) {
+      const a = new Audio(url)
+      a.onloadedmetadata = () => resolve(a.duration)
+      a.onerror = () => resolve(10)
+    } else {
+      resolve(10)
+    }
+  })
+}
+
+async function captureThumb(url: string): Promise<string> {
+  return new Promise((resolve) => {
+    const v = document.createElement('video')
+    v.src = url
+    v.crossOrigin = 'anonymous'
+    v.currentTime = 1
+    v.onseeked = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 160
+      canvas.height = 90
+      const ctx = canvas.getContext('2d')
+      ctx?.drawImage(v, 0, 0, 160, 90)
+      resolve(canvas.toDataURL('image/jpeg'))
+    }
+    v.onerror = () => resolve('')
+  })
+}
 
 export default function MediaBin() {
-  const { mediaFiles, addMedia, removeMedia, clips, tracks, addClip, addTrack } = useEditorStore()
+  const { user } = useAuth()
+  const { mediaFiles, addMedia, removeMedia, tracks, addTrack, clips, addClip } = useEditorStore()
   const inputRef = useRef<HTMLInputElement>(null)
+  
   const [isCleaning, setIsCleaning] = useState(false)
   const [activeTab, setActiveTab] = useState<'upload' | 'url'>('upload')
   const [urlInput, setUrlInput] = useState('')
   const [isFetching, setIsFetching] = useState(false)
 
+  const processFiles = useCallback(async (files: FileList) => {
+    if (!user) return
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const isVideo = file.type.startsWith('video')
+      const isAudio = file.type.startsWith('audio')
+      const isImage = file.type.startsWith('image')
+      if (!isVideo && !isAudio && !isImage) continue
+
+      const id = crypto.randomUUID()
+      const localUrl = URL.createObjectURL(file)
+      const type: MediaFile['type'] = isVideo ? 'video' : isAudio ? 'audio' : 'image'
+      const duration = (isVideo || isAudio) ? await getMediaDuration(file) : 10
+      const thumbnail = isVideo ? await captureThumb(localUrl) : (isImage ? localUrl : undefined)
+
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
+        const res = await fetch(`${backendUrl}/api/videos/upload`, { method: 'POST', body: formData })
+        const data = await res.json()
+        
+        if (data.url) {
+          await addMedia({ id, name: file.name, type, file, url: data.url, duration, thumbnail }, user.id)
+        } else {
+          throw new Error('Upload failed')
+        }
+      } catch (err) {
+        console.error('Upload error, falling back to local storage:', err)
+        await addMedia({ id, name: file.name, type, file, url: localUrl, duration, thumbnail }, user.id)
+      }
+    }
+  }, [addMedia, user])
+
   const handleUrlImport = async () => {
-    if (!urlInput.trim()) return
+    if (!urlInput.trim() || !user) return
     setIsFetching(true)
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
@@ -88,135 +103,51 @@ export default function MediaBin() {
       const data = await res.json()
       
       if (data.videoUrl) {
-        // Fetch the file to get Blob and duration if needed
         const videoRes = await fetch(data.videoUrl)
         const blob = await videoRes.blob()
         const file = new File([blob], `${data.title || 'Downloaded'}.mp4`, { type: 'video/mp4' })
-        
         const id = crypto.randomUUID()
         await addMedia({
-          id,
-          name: data.title || 'Downloaded Video',
-          type: 'video',
-          file,
-          url: data.videoUrl,
-          duration: data.duration || 10,
-          thumbnail: data.thumbnail
-        })
+          id, name: data.title || 'Downloaded Video', type: 'video',
+          file, url: data.videoUrl, duration: data.duration || 10, thumbnail: data.thumbnail
+        }, user.id)
         setUrlInput('')
         setActiveTab('upload')
+        toast.success('Imported video from URL')
       } else {
-        alert(data.error || 'Failed to fetch video info')
+        toast.error(data.error || 'Failed to fetch video info')
       }
     } catch (err) {
       console.error('URL Import error:', err)
-      alert('Failed to download video')
+      toast.error('Failed to download video')
     } finally {
       setIsFetching(false)
     }
   }
 
   const handleCleanup = async () => {
-    if (!confirm('Are you sure you want to clean up server garbage? This will remove all temporary files and local uploads.')) return
-    
+    if (!confirm('Are you sure you want to clean up server garbage?')) return
     setIsCleaning(true)
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
       const res = await fetch(`${backendUrl}/api/videos/cleanup`, { method: 'POST' })
       const data = await res.json()
-      if (data.success) {
-        alert(`Cleanup successful! Deleted ${data.deletedCount} files.`)
-      }
-    } catch (err) {
-      console.error('Cleanup failed:', err)
-    } finally {
-      setIsCleaning(false)
-    }
+      if (data.success) toast.success(`Cleanup successful! Deleted ${data.deletedCount} files.`)
+    } catch (err) { console.error('Cleanup failed:', err) }
+    finally { setIsCleaning(false) }
   }
-
-  const handleRemoveMedia = async (media: MediaFile) => {
-    // If it's a local backend file, try to delete it
-    if (media.url && media.url.includes('/uploads/')) {
-      try {
-        const filename = media.url.split('/').pop()
-        if (filename) {
-          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
-          await fetch(`${backendUrl}/api/videos/uploads/${filename}`, { method: 'DELETE' })
-        }
-      } catch (e) {
-        console.warn('Failed to delete file from server:', e)
-      }
-    }
-    removeMedia(media.id)
-  }
-
-  const processFiles = useCallback(async (files: FileList | File[]) => {
-    for (const file of Array.from(files)) {
-      const isVideo = file.type.startsWith('video/')
-      const isAudio = file.type.startsWith('audio/')
-      const isImage = file.type.startsWith('image/')
-      if (!isVideo && !isAudio && !isImage) continue
-
-      const id = crypto.randomUUID()
-      const localUrl = URL.createObjectURL(file)
-      const type: MediaFile['type'] = isVideo ? 'video' : isAudio ? 'audio' : 'image'
-
-      const duration = (isVideo || isAudio) ? await getMediaDuration(file) : 10
-      const thumbnail = isVideo ? await captureThumb(localUrl) : (isImage ? localUrl : undefined)
-
-      // Upload to backend
-      try {
-        const formData = new FormData()
-        formData.append('file', file)
-        
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
-        const res = await fetch(`${backendUrl}/api/videos/upload`, {
-          method: 'POST',
-          body: formData
-        })
-        const data = await res.json()
-        
-        if (data.url) {
-          await addMedia({ id, name: file.name, type, file, url: data.url, duration, thumbnail })
-        } else {
-          throw new Error('Upload failed')
-        }
-      } catch (err) {
-        console.error('Upload error, falling back to local storage:', err)
-        // Fallback to local if backend is down
-        await addMedia({ id, name: file.name, type, file, url: localUrl, duration, thumbnail })
-      }
-    }
-  }, [addMedia])
 
   const handleAddToTimeline = useCallback((media: MediaFile) => {
-    let targetTrack =
-      tracks.find(t => t.type === media.type) ??
-      tracks.find(t => media.type === 'image' && t.type === 'video')
-
-    let trackId: string
-    if (targetTrack?.id) {
-      trackId = targetTrack.id
-    } else {
-      trackId = addTrack(media.type === 'image' ? 'video' : media.type)
-    }
-
+    let targetTrack = tracks.find(t => t.type === media.type) ?? tracks.find(t => media.type === 'image' && t.type === 'video')
+    let trackId: string = targetTrack?.id || addTrack(media.type === 'image' ? 'video' : media.type)
     const trackClips = clips.filter(c => c.trackId === trackId)
-    const nextStart = trackClips.length === 0 ? 0
-      : Math.max(...trackClips.map(c => c.startTime + c.duration))
-
-    const clip: Clip = {
-      id: makeClipId(),
-      mediaId: media.id,
-      name: media.name.replace(/\.[^.]+$/, ''),
-      type: media.type,
-      trackId: trackId,
-      startTime: nextStart,
-      duration: media.duration,
-      trimStart: 0, trimEnd: 0, volume: 1,
-    }
-    addClip(clip)
-  }, [tracks, clips, addClip])
+    const nextStart = trackClips.length === 0 ? 0 : Math.max(...trackClips.map(c => c.startTime + c.duration))
+    addClip({
+      id: makeClipId(), mediaId: media.id, name: media.name.replace(/\.[^.]+$/, ''),
+      type: media.type, trackId, startTime: nextStart, duration: media.duration,
+      trimStart: 0, trimEnd: 0, volume: 1
+    })
+  }, [tracks, clips, addClip, addTrack])
 
   return (
     <div
@@ -224,150 +155,119 @@ export default function MediaBin() {
       onDrop={e => { e.preventDefault(); processFiles(e.dataTransfer.files) }}
       onDragOver={e => e.preventDefault()}
     >
-      {/* Header & Tabs */}
-      <div className="px-3 pt-3 shrink-0 space-y-3">
+      {/* Header Area */}
+      <div className="px-6 pt-7 pb-5 shrink-0 space-y-6">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Project Media</span>
-          <div className="flex bg-zinc-900 rounded-lg p-0.5 border border-zinc-800">
-            <button
-              onClick={() => setActiveTab('upload')}
-              className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all ${activeTab === 'upload' ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-400'}`}
-            >
-              Upload
-            </button>
-            <button
-              onClick={() => setActiveTab('url')}
-              className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all ${activeTab === 'url' ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-400'}`}
-            >
-              Link
-            </button>
+          <div className="flex items-center gap-2.5">
+            <div className="w-1.5 h-5 bg-indigo-500 rounded-full shadow-[0_0_12px_rgba(91,92,246,0.5)]"></div>
+            <span className="text-[13px] font-bold text-zinc-200 uppercase tracking-[0.25em]">Media Library</span>
+          </div>
+          <div className="flex items-center gap-1.5 opacity-40">
+             <div className="w-1.5 h-1.5 rounded-full bg-zinc-500"></div>
+             <span className="text-[10px] font-bold text-zinc-500 uppercase">Project</span>
           </div>
         </div>
 
-        {activeTab === 'upload' ? (
+        {/* Improved Segmented Control */}
+        <div className="flex bg-black/40 rounded-[20px] p-1.5 border border-white/5 shadow-2xl">
           <button
-            onClick={() => inputRef.current?.click()}
-            className="flex items-center justify-center gap-1.5 w-full py-2 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 text-indigo-400 text-xs font-semibold transition-all active:scale-[0.98]"
+            onClick={() => setActiveTab('upload')}
+            className={`flex-1 flex items-center justify-center gap-3 py-3 rounded-2xl text-[12px] font-bold transition-all duration-300 ${activeTab === 'upload' ? 'bg-[#2a2a2e] text-white shadow-xl border border-white/10' : 'text-zinc-500 hover:text-zinc-400 hover:bg-white/5'}`}
           >
-            <Import className="w-3.5 h-3.5" /> Import Local Files
+            <UploadCloud className={`w-4 h-4 ${activeTab === 'upload' ? 'text-indigo-400' : ''}`} />
+            Upload
           </button>
-        ) : (
-          <div className="flex gap-1.5">
-            <div className="relative flex-1">
-              <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" />
-              <input
-                type="text"
-                value={urlInput}
-                onChange={e => setUrlInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleUrlImport()}
-                placeholder="YouTube or TikTok URL..."
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2 pl-8 pr-3 text-xs text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:border-indigo-500/50 transition-colors"
-              />
-            </div>
-            <button
-              onClick={handleUrlImport}
-              disabled={isFetching || !urlInput.trim()}
-              className={`px-3 rounded-lg flex items-center justify-center transition-all ${isFetching || !urlInput.trim() ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-600/10'}`}
-            >
-              {isFetching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-            </button>
-          </div>
-        )}
+          <button
+            onClick={() => setActiveTab('url')}
+            className={`flex-1 flex items-center justify-center gap-3 py-3 rounded-2xl text-[12px] font-bold transition-all duration-300 ${activeTab === 'url' ? 'bg-[#2a2a2e] text-white shadow-xl border border-white/10' : 'text-zinc-500 hover:text-zinc-400 hover:bg-white/5'}`}
+          >
+            <Globe className={`w-4 h-4 ${activeTab === 'url' ? 'text-indigo-400' : ''}`} />
+            Link
+          </button>
+        </div>
 
-        <input
-          ref={inputRef} type="file" multiple accept="video/*,audio/*,image/*" className="hidden"
-          onChange={e => e.target.files && processFiles(e.target.files)}
-        />
+        <div className="pt-1">
+          {activeTab === 'upload' ? (
+            <button
+              onClick={() => inputRef.current?.click()}
+              className="group flex items-center justify-center gap-3 w-full py-3.5 rounded-[20px] bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 text-sm font-bold transition-all active:scale-[0.96] hover:shadow-[0_0_40px_rgba(79,70,229,0.2)]"
+            >
+              <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" /> 
+              Import Files
+            </button>
+          ) : (
+            <div className="flex gap-3">
+              <div className="relative flex-1 group">
+                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 group-focus-within:text-indigo-400 transition-colors" />
+                <input
+                  type="text" value={urlInput} onChange={e => setUrlInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleUrlImport()}
+                  placeholder="Paste video URL here..."
+                  className="w-full bg-black/40 border border-white/5 rounded-[20px] py-3.5 pl-11 pr-4 text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 transition-all"
+                />
+              </div>
+              <button
+                onClick={handleUrlImport} disabled={isFetching || !urlInput.trim()}
+                className={`px-5 rounded-[20px] flex items-center justify-center transition-all active:scale-90 ${isFetching || !urlInput.trim() ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-[0_8px_20px_rgba(79,70,229,0.3)]'}`}
+              >
+                {isFetching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+              </button>
+            </div>
+          )}
+        </div>
+        <input ref={inputRef} type="file" multiple accept="video/*,audio/*,image/*" className="hidden" onChange={e => e.target.files && processFiles(e.target.files)} />
       </div>
 
-      {/* Media list */}
-      <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1.5 custom-scrollbar">
+      {/* Media List */}
+      <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-3 custom-scrollbar">
         {mediaFiles.length === 0 ? (
-          <div
-            onClick={() => inputRef.current?.click()}
-            className="flex flex-col items-center justify-center gap-3 cursor-pointer rounded-xl transition-all border-2 border-dashed border-zinc-800/80 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 mx-1 mt-2 min-h-[160px]"
-          >
-            <UploadCloud className="w-8 h-8 text-zinc-600" />
+          <div onClick={() => inputRef.current?.click()} className="flex flex-col items-center justify-center gap-5 cursor-pointer rounded-[32px] border-2 border-dashed border-zinc-800/60 bg-zinc-900/20 hover:bg-zinc-900/40 hover:border-zinc-500/50 transition-all min-h-[220px]">
+            <div className="w-20 h-20 rounded-full bg-zinc-800/30 flex items-center justify-center border border-white/5 shadow-inner">
+              <UploadCloud className="w-10 h-10 text-zinc-500" />
+            </div>
             <div className="text-center">
-              <p className="text-xs font-semibold text-zinc-400">Drop files to import</p>
-              <p className="text-[10px] text-zinc-600 mt-1">Video, Audio, Images</p>
+              <p className="text-[15px] font-bold text-zinc-400">Add your media</p>
+              <p className="text-xs text-zinc-600 mt-2">Drag and drop files here to start</p>
             </div>
           </div>
         ) : (
           mediaFiles.map(media => (
-            <div
-              key={media.id}
-              draggable
-              onDragStart={e => e.dataTransfer.setData('mediaId', media.id)}
-              onDoubleClick={() => handleAddToTimeline(media)}
-              className="flex items-center gap-2.5 p-1.5 rounded-lg group cursor-pointer transition-colors hover:bg-zinc-800/80 bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700/80"
+            <div key={media.id} draggable onDragStart={e => e.dataTransfer.setData('mediaId', media.id)} onDoubleClick={() => handleAddToTimeline(media)}
+              className="flex items-center gap-4 p-3 rounded-2xl group cursor-pointer transition-all hover:bg-white/[0.03] bg-zinc-900/20 border border-white/5 hover:border-white/10 hover:shadow-xl"
             >
-              {/* Thumbnail */}
-              <div className="w-14 h-10 rounded overflow-hidden shrink-0 flex items-center justify-center bg-zinc-950 relative border border-zinc-800/80 group-hover:border-indigo-500/50 transition-colors">
-                {media.thumbnail
-                  ? <img src={media.thumbnail} className="w-full h-full object-cover" alt="" />
-                  : media.type === 'audio' ? <Music className="w-5 h-5 text-emerald-500/60" />
-                  : media.type === 'image' ? <ImageIcon className="w-5 h-5 text-amber-500/60" />
-                  : <Film className="w-5 h-5 text-blue-500/60" />
+              <div className="w-20 h-12 rounded-xl overflow-hidden shrink-0 flex items-center justify-center bg-zinc-950 relative border border-white/5 shadow-lg group-hover:scale-[1.05] transition-transform">
+                {media.thumbnail ? <img src={media.thumbnail} className="w-full h-full object-cover" alt="" /> : 
+                  media.type === 'audio' ? <Music className="w-6 h-6 text-emerald-500/60" /> : 
+                  media.type === 'image' ? <ImageIcon className="w-6 h-6 text-amber-500/60" /> : <Film className="w-6 h-6 text-blue-500/60" />
                 }
-                
-                {/* Type Badge */}
-                <div className="absolute bottom-0.5 right-0.5 bg-black/60 backdrop-blur-sm rounded-sm px-1 py-0.5">
-                  {media.type === 'video' && <Film className="w-2.5 h-2.5 text-blue-400" />}
-                  {media.type === 'audio' && <Music className="w-2.5 h-2.5 text-emerald-400" />}
-                  {media.type === 'image' && <ImageIcon className="w-2.5 h-2.5 text-amber-400" />}
+                <div className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-md rounded-md px-1.5 py-1">
+                  {media.type === 'video' && <Film className="w-3 h-3 text-blue-400" />}
+                  {media.type === 'audio' && <Music className="w-3 h-3 text-emerald-400" />}
+                  {media.type === 'image' && <ImageIcon className="w-3 h-3 text-amber-400" />}
                 </div>
               </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0 pr-1">
-                <p className="text-xs font-medium text-zinc-300 truncate leading-tight group-hover:text-zinc-100">
-                  {media.name.replace(/\.[^.]+$/, '')}
-                </p>
-                <p className="text-[10px] font-mono text-zinc-600 mt-0.5">{fmtDur(media.duration)}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-bold text-zinc-300 truncate group-hover:text-white transition-colors">{media.name.replace(/\.[^.]+$/, '')}</p>
+                <p className="text-[11px] font-mono text-zinc-600 mt-1">{fmtDur(media.duration)}</p>
               </div>
-
-              {/* Actions */}
-              <div className="flex flex-col gap-1 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={e => { e.stopPropagation(); handleAddToTimeline(media) }}
-                  className="w-5 h-5 rounded flex items-center justify-center text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/20 transition-colors"
-                  title="Add to timeline"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={e => { e.stopPropagation(); handleRemoveMedia(media) }}
-                  className="w-5 h-5 rounded flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-500/20 transition-colors"
-                  title="Remove"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                <button onClick={e => { e.stopPropagation(); handleAddToTimeline(media) }} className="w-8 h-8 rounded-full flex items-center justify-center text-indigo-400 hover:bg-indigo-500/20 transition-colors"><Plus className="w-4 h-4" /></button>
+                <button onClick={e => { e.stopPropagation(); removeMedia(media.id, user!.id) }} className="w-8 h-8 rounded-full flex items-center justify-center text-red-400 hover:bg-red-500/20 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
           ))
         )}
       </div>
 
-      {/* Footer: count and cleanup */}
+      {/* Footer */}
       {mediaFiles.length > 0 && (
-        <div className="px-4 py-2 shrink-0 border-t border-zinc-800/60 flex justify-between items-center bg-zinc-950/50">
-          <p className="text-[10px] font-medium text-zinc-600">{mediaFiles.length} item{mediaFiles.length !== 1 ? 's' : ''}</p>
-          <button
-            onClick={handleCleanup}
-            disabled={isCleaning}
-            className="flex items-center gap-1 text-[10px] text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-50"
-            title="Clean up all server-side temporary files"
-          >
-            {isCleaning ? 'Cleaning...' : (
-              <>
-                <Sparkles className="w-3 h-3" /> Clean Garbage
-              </>
-            )}
+        <div className="px-6 py-4 shrink-0 border-t border-white/5 flex justify-between items-center bg-black/20">
+          <p className="text-[11px] font-bold text-zinc-600 uppercase tracking-widest">{mediaFiles.length} item{mediaFiles.length !== 1 ? 's' : ''}</p>
+          <button onClick={handleCleanup} disabled={isCleaning} className="flex items-center gap-2 text-[11px] font-bold text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-50 uppercase tracking-tight">
+            {isCleaning ? 'Cleaning...' : <><Sparkles className="w-3.5 h-3.5" /> Clean Trash</>}
           </button>
         </div>
       )}
     </div>
   )
 }
-

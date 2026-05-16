@@ -1,40 +1,32 @@
 KERN-R Studio — สุดยอดโปรแกรมตัดต่อวิดีโอ AI ครบวงจร
 
-ความสามารถปัจจุบัน (V3.0 - CapCut Clone Engine):
+ความสามารถปัจจุบัน (V3.1 - Refined Pro Edition):
 
 1. ระบบ Core Architecture ใหม่:
-- 🗄️ Local Database (IndexedDB): บันทึก Media Files ลง Browser ป้องกันไฟล์หายเมื่อ Refresh
-- 💾 Auto-save System: บันทึก Timeline State ลง LocalStorage อัตโนมัติทุกการเคลื่อนไหว
-- 🔄 History Engine: ระบบ Undo/Redo สูงสุด 50 ขั้นตอน สำหรับทุก Action (ปุ่มใน TopBar ทำงานได้จริง)
+   - 🗄️ Local Database (IndexedDB): บันทึก Media Files ลง Browser ป้องกันไฟล์หายเมื่อ Refresh
+   - 💾 Auto-save System: บันทึก Timeline State ลง LocalStorage อัตโนมัติทุกการเคลื่อนไหว
+   - 🔄 History Engine: ระบบ Undo/Redo สูงสุด 50 ขั้นตอน สำหรับทุก Action
+   - 🔒 Multi-user Security: แยกข้อมูล (Projects/Media) ของแต่ละ User โดยสมบูรณ์ด้วย Supabase & IndexedDB
 
-2. ระบบ Advanced Timeline Engine (V3):
-- 🧲 Magnetic Timeline: ระบบแทร็กหลักที่คลิปดูดติดกันอัตโนมัติ (CapCut Style)
-- ✂️ Multi-Track Precision: รองรับแทร็ก Video (Main/PIP), Audio, Text และ Overlay แยกกัน
-- 📏 Precision Editing: ตัดคลิป (Split), ยืด/หด (Trim) และเคลื่อนย้ายคลิปได้ลื่นไหล
-- 🧩 Snapping Logic: ระบบดูดติดขอบคลิปและ Playhead เพื่อความแม่นยำ
+2. Interface & UX (CapCut Pro Inspired):
+   - 🌑 Dark Slate Aesthetics: ธีมมืดระดับมืออาชีพ พร้อมความลึก (Depth) และมิติ (Shadows)
+   - 🛠️ Modern Toolbar: ระบบ Pill containers สำหรับเครื่องมือตัดต่อ และปุ่มแม่เหล็ก (Magnetic Timeline)
+   - 🎞️ Pro Timeline: ระบบแทร็กที่แยก Video/Audio/Text ชัดเจน พร้อมไอคอนบ่งชี้
+   - 📦 Media Library: ระบบจัดการไฟล์สื่อแบบแบ่งหมวดหมู่ (Upload/Link) พร้อมพรีวิวแบบ Real-time
+   - 📢 Smart Notifications: ระบบแจ้งเตือน (Toasts) แบบสวยงามและไม่รบกวนการทำงาน
+   - 🚨 Stacked Modals: กล่องโต้ตอบการยืนยันแบบมีมิติและระยะห่างที่ถูกต้อง (Spacing Optimized)
 
-3. ระบบ Canvas & Inspector (Phase 3 — ใหม่):
-- 🎬 Video Transform: ปรับ Scale- [x] Stabilization: FFmpeg Async rendering, GPU Acceleration (NVENC/MF), Audio Sync/Volume Fix, Pixel-perfect Mapping.
-- 🖼️ Canvas Transform: วิดีโอแสดงผล transform (scale/position/rotate/opacity) บนหน้าจอพรีวิวจริง
-- 📝 Text Styling ขั้นสูง: ปรับ Stroke (ขอบ), Background color, Font Family ได้อย่างอิสระ ไม่มีเงาที่จำกัดสี
-- 🔲 Text Resize Handles: ลากปรับขนาด Text Overlay โดยตรงบน Canvas พร้อมกรอบสีขาวและ Rotate handle แบบ CapCut
-- 🧩 Inspector Component: แผง Properties แบบแยก Tab สไตล์ CapCut Online, สามารถปรับความดังเสียงในหน่วย เดซิเบล (dB) ได้อย่างละเอียด
-- 🖱️ Timeline Navigation: รองรับการเลื่อน Timeline แนวนอนด้วยลูกกลิ้งเมาส์ (Mouse Wheel)
-- ✂️ Separate Audio: คลิกขวาที่คลิปเพื่อแยกเสียงออกจากภาพ (ปิดเสียงคลิปเดิมและสร้าง Track เสียงใหม่ให้อัตโนมัติ)
-- 🖼️ Video Thumbnails: คลิปบนไทม์ไลน์แสดงรูป Thumbnail เป็นพื้นหลังให้รู้ว่าคลิปไหนเป็นคลิปไหน
-- ⚡ Playback & Sync Engine: เล่นวิดีโอข้ามช่องว่าง (Gaps) ได้เนียนกริบ ไม่ค้าง พร้อมระบบเช็คการโหลดข้อมูล (Buffering check) ป้องกันปัญหาเสียงเล่นไปก่อน
-- ✂️ Smart Split & Free-form: ตัดคลิปแม่นยำด้วย Smart Selection และปรับ Timeline เป็นแบบ Free-form (ปิดการดูดเข้าหากัน) เพื่อให้ขยับบล็อกอิสระ
-- 🗑️ Smart Cleanup: ระบบลบไฟล์ขยะในเครื่องอัตโนมัติ (Auto-delete local uploads) และปุ่มล้างไฟล์ชั่วคราว (Clean Garbage) ช่วยประหยัดพื้นที่เครื่อง
-- 🌊 Audio Waveforms: แสดงคลื่นเสียงจริงบนไทม์ไลน์ ช่วยให้การตัดต่อแม่นยำตามจังหวะเสียง
-- 🤖 AI Smart Cut: ระบบลบช่วงเงียบอัตโนมัติ (Silence Removal) สำหรับสายทำคลิปพูดคนเดียว
-- 📥 Link Import: ระบบดูดคลิปจาก YouTube / TikTok มาตัดต่อได้ทันทีผ่าน URL
-- 💎 Pro Keyframe Engine: มาร์คจุด Animation ได้ละเอียดทุกคุณสมบัติ (Scale, Pos, Opacity, Rotate) พร้อมระบบ Interpolation ที่แม่นยำทั้งหน้า Preview และตอน Export
-- 🎬 Transition Library: ระบบเปลี่ยนฉากพื้นฐาน พร้อมการปรับแต่งความสวยงามรายคลิป
-- ⌨️ Professional Shortcuts: รองรับ Space (Play), S (Split), Del (Delete), Ctrl+Z (Undo) เหมือนโปรแกรมระดับโลก
+3. ระบบการเรนเดอร์และประมวลผล:
+   - ⚡ Hybrid Rendering: เรนเดอร์ฝั่ง Client (พรีวิว) และฝั่ง Server (ส่งออก)
+   - 🎥 FFmpeg Integration: ประมวลผลวิดีโอระดับสูงบน Backend รองรับการใส่ Transition และ Text Overlay
+   - 🖥️ Hardware Acceleration: รองรับการเรนเดอร์ผ่าน NVENC (NVIDIA) เพื่อความเร็วสูงสุด
+   - 🏥 Backend Health Monitor: ตรวจสอบการเชื่อมต่อกับเซิร์ฟเวอร์เรนเดอร์แบบ Real-time บนหน้าแอป
 
-4. สถาปัตยกรรม (อัปเดตล่าสุด):
-- ลบระบบ Electron ออกทั้งหมด เปลี่ยนเป็น Web-Native แบบเต็มตัวเพื่อความรวดเร็วและใช้ขุมพลังเบราว์เซอร์
-- ระบบสร้าง Track อัตโนมัติ (Dynamic Tracks) ไม่ต้องจอง Track ล่วงหน้า
+4. ฟีเจอร์ตัดต่อพื้นฐาน:
+   - ✂️ Split & Trim: ตัดวิดีโอได้แม่นยำระดับเฟรม (S key)
+   - 🗑️ Layer Management: จัดการเลเยอร์ซ้อนกันได้ไม่จำกัด
+   - 🧲 Magnetic Snapping: คลิปดูดติดกันอัตโนมัติเพื่อความรวดเร็ว
+   - 🔍 Timeline Zoom: ขยายดูรายละเอียดได้ตั้งแต่ 15% - 400%
+   - 🔉 Separate Audio: แยกเสียงออกจากวิดีโอได้ในคลิกเดียว (Right Click -> Separate Audio)
 
-สถานะโครงการ: 🚀 V3 Production Ready (100%) — ทุกฟีเจอร์ตามแผนงานเสร็จสมบูรณ์
-
+สถานะ: V3.1 Production Ready - มุ่งเน้นความสวยงาม มิติของดีไซน์ และความเสถียรในการใช้งาน

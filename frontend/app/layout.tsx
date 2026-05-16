@@ -13,11 +13,17 @@ export const metadata: Metadata = {
   description: "Professional browser-based video editor",
 }
 
+import { AuthProvider } from "../contexts/AuthContext"
+import { Toaster } from "sonner"
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="h-full w-full overflow-hidden bg-[#09090d] text-white" style={{ fontFamily: 'var(--font-inter), system-ui, sans-serif' }}>
-        {children}
+        <AuthProvider>
+          {children}
+          <Toaster theme="dark" position="top-right" closeButton richColors />
+        </AuthProvider>
       </body>
     </html>
   )

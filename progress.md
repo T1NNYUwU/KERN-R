@@ -1,33 +1,22 @@
-# Progress Tracker — KERN-R Studio
+## 🚀 Current Milestone: CapCut Pro UI & Multi-User Security (Completed)
 
----
+### ✅ Done
+- [x] **V3.1 Refinement: Depth & Spacing**
+  - [x] Redesign **Confirm Modal** (CapCut Pro style with stacked buttons & depth)
+  - [x] Refactor **Media Library** (Improved spacing, segmented controls, card depth)
+  - [x] Consolidate Notification System (Switched to `sonner` for all toasts)
+  - [x] Fix Toolbar duplication (Removed internal timeline toolbar)
+- [x] **V3.0 UI/UX Overhaul (CapCut-Inspired)**
+  - [x] **Toolbar**: Pill-shaped tool containers, central playback controls, and persistent magnetic toggle.
+  - [x] **Spacing & Depth**: Optimized panel padding (16px-24px), nested shadows, and high-contrast borders to avoid "flat" look.
+  - [x] **UX Comfort**: Stacked action modals and segmented media controls for better accessibility.
+- [x] **Multi-User Data Isolation**: แยกข้อมูลตาม `userId` ในระดับ Database และ IndexedDB
+- [x] **Real-time Health Check**: ระบบเช็คสถานะเซิร์ฟเวอร์แบบอัตโนมัติ
 
-## ✅ Phase 1-8: MVP & Desktop App (เสร็จสิ้น)
-- ระบบพื้นฐาน Ranking Video, Electron Desktop App, Supabase Sync และ Binary Bundling ทำงานสมบูรณ์
-
----
-
-## ✅ Phase 9: Multi-Preset System (เสร็จสิ้น)
-- [x] หน้า Home ใหม่ (Mode Selector) สวยงามแบบพรีเมียม
-- [x] ระบบ Routing ( /ranking, /sequence, etc.)
-- [x] Backend Processor Architecture (Base, Ranking, Sequence, Split Screen)
-
----
-
-## ✅ Phase 10: Sound Effects & Overlay Animations (เสร็จสิ้น)
-- [x] Multi-Track Timeline Editor (ลากวางได้ละเอียดระดับวินาที)
-- [x] Built-in SFX Library
-- [x] Backend Effects Engine (FFmpeg adelay + amix + overlay)
-- [x] ระบบ Pop-up Image Overlay รายคลิป
-
----
-
-## ✅ Phase 11: AI Voice & Subtitles (เสร็จสิ้น)
-- [x] Multi-Engine TTS (Edge, Kokoro, Piper)
-- [x] Auto-Subtitle Generation (Thai/English support)
-- [x] สไตล์ซับสวยงาม (.ass format) ป้องกันตัวอักษรลอย
-
----
+### 🚧 In Progress
+- [ ] **Cloud Storage Sync**: ระบบอัปโหลดและจัดการสื่อบน Cloud (Supabase Storage)
+- [ ] **Advanced Transitions**: เพิ่มเอฟเฟกต์การเปลี่ยนผ่านวิดีโอที่ซับซ้อนขึ้น
+- [ ] **Mobile Layout Optimization**: ปรับแต่งหน้าจอให้รองรับการใช้งานบนมือถืออย่างสมบูรณ์
 
 ## ✅ Phase 12: Sequence Mode (เสร็จสิ้น)
 - [x] SequenceProcessor (Backend engine สำหรับต่อคลิป)
@@ -55,9 +44,12 @@
 ---
 
 ## ✅ Phase 16: KERN-R Studio V3 - Core Engine (Phase 3 เสร็จ)
-- [x] Data Persistence & Robust State (IndexedDB + Zustand Persist)
-- [x] Multi-track Architecture (Video, Audio, Text, Overlay)
-- [x] Timeline Engine: Magnetic & Core Interactions
+- [x] Implement Row-Level Security (RLS) on Supabase
+- [x] Scope local storage (IndexedDB) and timeline to `userId`
+- [x] Replace browser alerts with `sonner` toasts and custom modals
+- [x] Redesign Editor UI (CapCut Style: Toolbar, Dark Theme, Track Icons)
+- [x] Implement real-time backend health monitoring
+- [ ] Implement multi-user cloud asset management (Storage)
     - [x] Clip Trim & Smart Split (ตัดคลิปตรงที่เลือก หรือคลิปที่อยู่ใต้ Playhead อัตโนมัติ)
     - [x] Free-form Timeline (ปิด Magnetic ชั่วคราวเพื่อให้ขยับบล็อกได้อิสระ)
     - [x] Playback Engine: วิดีโอเล่นข้ามช่องว่าง (Gaps) ได้ ไม่หยุดเมื่อไม่เจอคลิป
