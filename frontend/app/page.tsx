@@ -111,12 +111,14 @@ export default function EditorPage() {
 
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #7c7cf8 0%, #5b5cf6 100%)', boxShadow: '0 2px 8px rgba(91,92,246,0.5)' }}>
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: 13 }}>K</span>
+          <div className="flex items-center gap-2.5 group cursor-pointer active:scale-95 transition-all">
+            <div className="w-8 h-8 rounded-lg overflow-hidden shadow-[0_2px_12px_rgba(91,92,246,0.4)] border border-white/10 group-hover:border-indigo-500/50 transition-colors">
+              <img src="/logo.png" className="w-full h-full object-cover" alt="KERN-R Logo" />
             </div>
-            <span style={{ fontWeight: 700, fontSize: 13, color: '#fff', letterSpacing: '-0.01em' }}>KERN-R Studio</span>
+            <div className="flex flex-col">
+              <span style={{ fontWeight: 900, fontSize: 13, color: '#fff', letterSpacing: '0.15em', lineHeight: 1 }}>KERN-R</span>
+              <span style={{ fontSize: 8, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 2 }}>Creative Studio</span>
+            </div>
           </div>
 
           <div style={{ width: 1, height: 16, background: C.border, margin: '0 4px' }} />
