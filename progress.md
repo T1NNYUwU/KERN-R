@@ -1,11 +1,12 @@
 ## 🚀 Current Milestone: CapCut Pro UI & Multi-User Security (Completed)
 
 ### ✅ Done
-- [x] **V3.1 Refinement: Depth & Spacing**
+- [x] **V3.1 Refinement: Depth, Spacing & Next.js 16 Production Ready**
   - [x] Redesign **Confirm Modal** (CapCut Pro style with stacked buttons & depth)
   - [x] Refactor **Media Library** (Improved spacing, segmented controls, card depth)
   - [x] Consolidate Notification System (Switched to `sonner` for all toasts)
   - [x] Fix Toolbar duplication (Removed internal timeline toolbar)
+  - [x] Migrate to Next.js 16 `proxy.ts` standard (Resolves Vercel `__dirname is not defined` Edge Runtime error)
 - [x] **V3.0 UI/UX Overhaul (CapCut-Inspired)**
   - [x] **Toolbar**: Pill-shaped tool containers, central playback controls, and persistent magnetic toggle.
   - [x] **Spacing & Depth**: Optimized panel padding (16px-24px), nested shadows, and high-contrast borders to avoid "flat" look.
