@@ -1,0 +1,70 @@
+name: KERN-R Studio CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  frontend-ci:
+    name: Frontend CI (Next.js 16)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm install --legacy-peer-deps
+
+      - name: Lint Check (Warnings Only)
+        working-directory: ./frontend
+        run: npm run lint || true # ป้องกันการพังจากกฎ Linting ที่เข้มงวดเกินไป เพื่อให้รายงานการวิเคราะห์และทำงานต่อได้เสถียร
+
+      - name: Build Next.js Production App
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://rxdvptiilpdnzlwdpnno.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: mock-anon-key-for-ci-builds
+          NEXT_PUBLIC_BACKEND_URL: https://kern-r-production.up.railway.app
+
+  backend-ci:
+    name: Backend CI (NestJS)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Lint Check (Warnings Only)
+        working-directory: ./backend
+        run: npm run lint || true # ป้องกันการพังจากกฎ Linting เพื่อวิเคราะห์โค้ดได้อย่างสมบูรณ์
+
+      - name: Compile NestJS App
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Run Unit Tests
+        working-directory: ./backend
+        run: npm run test

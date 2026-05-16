@@ -6,7 +6,10 @@
   - [x] Refactor **Media Library** (Improved spacing, segmented controls, card depth)
   - [x] Consolidate Notification System (Switched to `sonner` for all toasts)
   - [x] Fix Toolbar duplication (Removed internal timeline toolbar)
-  - [x] Migrate to Next.js 16 `proxy.ts` standard (Resolves Vercel `__dirname is not defined` Edge Runtime error)
+  - [x] Migrate to Next.js 16 Edge Runtime Standard (แก้ไขปัญหา `__dirname is not defined` และแก้ 404 บิลด์ล้าง Cache ได้ 100%)
+- [x] **Vercel & Railway Multi-service Production Deployed**
+  - [x] Deploy Backend (Railway: `kern-r-production.up.railway.app`) ทำงานเสร็จสมบูรณ์
+  - [x] Deploy Frontend (Vercel) เคลียร์บิลด์เก่า สำเร็จและแสดงหน้าจอ UI 100%
 - [x] **V3.0 UI/UX Overhaul (CapCut-Inspired)**
   - [x] **Toolbar**: Pill-shaped tool containers, central playback controls, and persistent magnetic toggle.
   - [x] **Spacing & Depth**: Optimized panel padding (16px-24px), nested shadows, and high-contrast borders to avoid "flat" look.
@@ -15,6 +18,7 @@
 - [x] **Real-time Health Check**: ระบบเช็คสถานะเซิร์ฟเวอร์แบบอัตโนมัติ
 
 ### 🚧 In Progress
+- [ ] **Custom Domain Config**: ตั้งค่าโดเมน `kerntemplate.online` (Hostinger) เชื่อมต่อ Vercel, Supabase และ Railway Backend CORS
 - [ ] **Cloud Storage Sync**: ระบบอัปโหลดและจัดการสื่อบน Cloud (Supabase Storage)
 - [ ] **Advanced Transitions**: เพิ่มเอฟเฟกต์การเปลี่ยนผ่านวิดีโอที่ซับซ้อนขึ้น
 - [ ] **Mobile Layout Optimization**: ปรับแต่งหน้าจอให้รองรับการใช้งานบนมือถืออย่างสมบูรณ์

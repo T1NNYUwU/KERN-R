@@ -6,7 +6,10 @@ export class RedisController {
   constructor(private readonly redisService: RedisService) {}
 
   @Post('set')
-  async setKey(@Body('key') key: string, @Body('value') value: string): Promise<string> {
+  async setKey(
+    @Body('key') key: string,
+    @Body('value') value: string,
+  ): Promise<string> {
     await this.redisService.set(key, value);
     return `Key ${key} set successfully.`;
   }

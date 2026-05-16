@@ -5,13 +5,20 @@ import * as path from 'path';
 export abstract class BaseProcessor {
   constructor(protected readonly supabaseService: SupabaseService) {}
 
-  abstract process(jobId: string, videoSettings: any, itemsPayload: any[]): Promise<string>;
+  abstract process(
+    jobId: string,
+    videoSettings: any,
+    itemsPayload: any[],
+  ): Promise<string>;
 
   protected getBinaryPath(name: string): string {
     const isElectron = process.env.IS_ELECTRON === 'true';
     const binRoot = process.env.BIN_ROOT;
     if (isElectron && binRoot) {
-      const binPath = path.join(binRoot, `${name}${process.platform === 'win32' ? '.exe' : ''}`);
+      const binPath = path.join(
+        binRoot,
+        `${name}${process.platform === 'win32' ? '.exe' : ''}`,
+      );
       if (fs.existsSync(binPath)) {
         return `"${binPath.replace(/\\/g, '/')}"`;
       }

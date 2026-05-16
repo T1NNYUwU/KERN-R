@@ -10,7 +10,9 @@ export class SupabaseService {
     const supabaseKey = process.env.SUPABASE_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase URL or Key is missing in environment variables');
+      throw new Error(
+        'Supabase URL or Key is missing in environment variables',
+      );
     }
 
     this.supabase = createClient(supabaseUrl, supabaseKey);
@@ -20,7 +22,12 @@ export class SupabaseService {
     return this.supabase;
   }
 
-  async updateJobStatus(jobId: string, status: string, progress: number, finalVideoUrl?: string) {
+  async updateJobStatus(
+    jobId: string,
+    status: string,
+    progress: number,
+    finalVideoUrl?: string,
+  ) {
     const { error } = await this.supabase
       .from('video_jobs')
       .update({ status, progress, final_video_url: finalVideoUrl })
@@ -36,7 +43,7 @@ export class SupabaseService {
     const path = require('path');
     const fileContent = fs.readFileSync(filePath);
     const ext = path.extname(fileName).toLowerCase();
-    
+
     let contentType = 'application/octet-stream';
     if (ext === '.mp4') contentType = 'video/mp4';
     else if (ext === '.mp3') contentType = 'audio/mpeg';

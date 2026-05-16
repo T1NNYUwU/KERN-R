@@ -9,7 +9,11 @@ export class SplitScreenProcessor extends BaseProcessor {
     super(supabaseService);
   }
 
-  async process(id: string, video_settings: any, items_payload: any[]): Promise<string> {
+  async process(
+    id: string,
+    video_settings: any,
+    items_payload: any[],
+  ): Promise<string> {
     const tempDir = path.join(process.cwd(), 'temp', id);
     const ffmpeg = this.getBinaryPath('ffmpeg');
     const ytdlp = this.getBinaryPath('yt-dlp');
@@ -17,7 +21,7 @@ export class SplitScreenProcessor extends BaseProcessor {
     try {
       await this.supabaseService.updateJobStatus(id, 'PROCESSING', 10);
       fs.mkdirSync(tempDir, { recursive: true });
-      
+
       const inputs: string[] = [];
       const numClips = Math.min(items_payload.length, 4); // Limit to 4 for now
 
@@ -25,24 +29,30 @@ export class SplitScreenProcessor extends BaseProcessor {
         const item = items_payload[i];
         const clipPath = path.join(tempDir, `clip_${i}.mp4`);
         const processedPath = path.join(tempDir, `proc_${i}.mp4`);
-        
+
         try {
-          execSync(`${ytdlp} -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]" "${item.link}" -o "${clipPath}" --force-overwrites -q`);
+          execSync(
+            `${ytdlp} -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]" "${item.link}" -o "${clipPath}" --force-overwrites -q`,
+          );
         } catch (e) {
-          execSync(`${ffmpeg} -f lavfi -i color=c=black:s=960x540:d=10 -c:v libx264 "${clipPath}" -y`);
+          execSync(
+            `${ffmpeg} -f lavfi -i color=c=black:s=960x540:d=10 -c:v libx264 "${clipPath}" -y`,
+          );
         }
 
         // Resize each clip to half of 1080p (960x540) for 2x2 grid
-        execSync(`${ffmpeg} -i "${clipPath}" -vf "scale=960:540:force_original_aspect_ratio=increase,crop=960:540,fps=30" -c:v libx264 -pix_fmt yuv420p "${processedPath}" -y`);
+        execSync(
+          `${ffmpeg} -i "${clipPath}" -vf "scale=960:540:force_original_aspect_ratio=increase,crop=960:540,fps=30" -c:v libx264 -pix_fmt yuv420p "${processedPath}" -y`,
+        );
         inputs.push(processedPath);
       }
 
       const finalPath = path.join(tempDir, 'final.mp4');
-      
+
       const layoutMode = video_settings.layout || '2x1';
       let filter = '';
       let amix = '';
-      
+
       for (let i = 0; i < numClips; i++) {
         amix += `[${i}:a]volume=1.0[a${i}];`;
       }
@@ -60,11 +70,22 @@ export class SplitScreenProcessor extends BaseProcessor {
         filter = `[0:v]scale=1920:1080[v]`;
       }
 
-      const inputArgs = inputs.map(p => `-i "${p}"`).join(' ');
-      execSync(`${ffmpeg} ${inputArgs} -filter_complex "${filter};${amix}" -map "[v]" -map "[aout]" -c:v libx264 -preset fast -pix_fmt yuv420p "final.mp4" -y`, { cwd: tempDir });
+      const inputArgs = inputs.map((p) => `-i "${p}"`).join(' ');
+      execSync(
+        `${ffmpeg} ${inputArgs} -filter_complex "${filter};${amix}" -map "[v]" -map "[aout]" -c:v libx264 -preset fast -pix_fmt yuv420p "final.mp4" -y`,
+        { cwd: tempDir },
+      );
 
-      const publicUrl = await this.supabaseService.uploadFile(finalPath, `${id}.mp4`);
-      await this.supabaseService.updateJobStatus(id, 'COMPLETED', 100, publicUrl || undefined);
+      const publicUrl = await this.supabaseService.uploadFile(
+        finalPath,
+        `${id}.mp4`,
+      );
+      await this.supabaseService.updateJobStatus(
+        id,
+        'COMPLETED',
+        100,
+        publicUrl || undefined,
+      );
       await this.cleanup(tempDir);
       return publicUrl || '';
     } catch (e) {

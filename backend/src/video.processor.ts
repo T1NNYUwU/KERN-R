@@ -26,21 +26,42 @@ export class VideoProcessor implements OnModuleInit {
       'video-rendering',
       async (job: Job) => {
         try {
-          const { preset_mode = 'ranking', id, video_settings, items_payload } = job.data;
+          const {
+            preset_mode = 'ranking',
+            id,
+            video_settings,
+            items_payload,
+          } = job.data;
           console.log(`Processing job ${id} with mode: ${preset_mode}`);
 
           switch (preset_mode) {
             case 'ranking':
-              await this.rankingProcessor.process(id, video_settings, items_payload);
+              await this.rankingProcessor.process(
+                id,
+                video_settings,
+                items_payload,
+              );
               break;
             case 'sequence':
-              await this.sequenceProcessor.process(id, video_settings, items_payload);
+              await this.sequenceProcessor.process(
+                id,
+                video_settings,
+                items_payload,
+              );
               break;
             case 'split':
-              await this.splitScreenProcessor.process(id, video_settings, items_payload);
+              await this.splitScreenProcessor.process(
+                id,
+                video_settings,
+                items_payload,
+              );
               break;
             case 'timeline':
-              await this.timelineProcessor.process(id, job.data.clips, job.data.mediaFiles);
+              await this.timelineProcessor.process(
+                id,
+                job.data.clips,
+                job.data.mediaFiles,
+              );
               break;
             default:
               console.error(`Unknown preset mode: ${preset_mode}`);
@@ -62,7 +83,11 @@ export class VideoProcessor implements OnModuleInit {
       },
     );
 
-    this.worker.on('completed', (job) => console.log(`Job ${job.id} completed`));
-    this.worker.on('failed', (job, err) => console.error(`Job ${job?.id} failed: ${err.message}`));
+    this.worker.on('completed', (job) =>
+      console.log(`Job ${job.id} completed`),
+    );
+    this.worker.on('failed', (job, err) =>
+      console.error(`Job ${job?.id} failed: ${err.message}`),
+    );
   }
 }

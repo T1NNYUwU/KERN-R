@@ -8,8 +8,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 const isElectron = process.env.IS_ELECTRON === 'true';
-const frontendPath = isElectron 
-  ? join(__dirname, '..', '..', 'frontend', 'out') 
+const frontendPath = isElectron
+  ? join(__dirname, '..', '..', 'frontend', 'out')
   : join(process.cwd(), '..', 'frontend', 'out');
 
 @Module({
@@ -30,7 +30,7 @@ const frontendPath = isElectron
       {
         rootPath: frontendPath,
         serveRoot: '/',
-      }
+      },
     ),
     RedisModule,
     VideoQueueModule,

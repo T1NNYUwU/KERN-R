@@ -16,7 +16,7 @@ export interface TTSOptions {
 export class TTSEngine {
   static async generate(options: TTSOptions): Promise<void> {
     const { text, outputFile, engine, voice } = options;
-    
+
     switch (engine) {
       case 'kokoro':
         await this.generateKokoro(text, outputFile, voice);
@@ -42,49 +42,76 @@ export class TTSEngine {
     }
   }
 
-  private static async generateEdge(text: string, outputFile: string, voice = 'th-TH-NiwatNeural'): Promise<void> {
+  private static async generateEdge(
+    text: string,
+    outputFile: string,
+    voice = 'th-TH-NiwatNeural',
+  ): Promise<void> {
     const escapedText = text.replace(/"/g, '\\"');
-    execSync(`edge-tts --text "${escapedText}" --voice "${voice}" --write-media "${outputFile}"`);
+    execSync(
+      `edge-tts --text "${escapedText}" --voice "${voice}" --write-media "${outputFile}"`,
+    );
   }
 
-  private static async generateKokoro(text: string, outputFile: string, voice = 'af_heart'): Promise<void> {
+  private static async generateKokoro(
+    text: string,
+    outputFile: string,
+    voice = 'af_heart',
+  ): Promise<void> {
     // Kokoro usually runs as a Python service or via a CLI wrapper
     // For now, we'll try to call a local python script if available, else fallback to edge
     try {
       // Assuming a kokoro-cli or similar is installed
       const escapedText = text.replace(/"/g, '\\"');
-      execSync(`kokoro-tts --text "${escapedText}" --voice "${voice}" --output "${outputFile}"`);
+      execSync(
+        `kokoro-tts --text "${escapedText}" --voice "${voice}" --output "${outputFile}"`,
+      );
     } catch (e) {
       console.warn('Kokoro TTS failed, falling back to edge-tts');
       await this.generateEdge(text, outputFile);
     }
   }
 
-  private static async generatePiper(text: string, outputFile: string, voice = 'th-th-niwat-medium'): Promise<void> {
+  private static async generatePiper(
+    text: string,
+    outputFile: string,
+    voice = 'th-th-niwat-medium',
+  ): Promise<void> {
     try {
-      const piperBin = process.env.IS_ELECTRON === 'true' 
-        ? path.join(process.env.BIN_ROOT || '', 'piper', 'piper.exe')
-        : 'piper';
-      
-      const modelPath = path.join(process.env.BIN_ROOT || '', 'piper', `${voice}.onnx`);
-      
+      const piperBin =
+        process.env.IS_ELECTRON === 'true'
+          ? path.join(process.env.BIN_ROOT || '', 'piper', 'piper.exe')
+          : 'piper';
+
+      const modelPath = path.join(
+        process.env.BIN_ROOT || '',
+        'piper',
+        `${voice}.onnx`,
+      );
+
       if (!fs.existsSync(modelPath)) throw new Error('Piper model not found');
 
       // pipe text to piper
-      execSync(`echo "${text}" | ${piperBin} --model ${modelPath} --output_file ${outputFile}`);
+      execSync(
+        `echo "${text}" | ${piperBin} --model ${modelPath} --output_file ${outputFile}`,
+      );
     } catch (e) {
       console.warn('Piper TTS failed, falling back to edge-tts');
       await this.generateEdge(text, outputFile);
     }
   }
 
-  private static async generateGoogle(text: string, outputFile: string, voice = 'th'): Promise<void> {
+  private static async generateGoogle(
+    text: string,
+    outputFile: string,
+    voice = 'th',
+  ): Promise<void> {
     const url = googleTTS.getAudioUrl(text, {
       lang: voice || 'th',
       slow: false,
       host: 'https://translate.google.com',
     });
-    
+
     const response = await axios({
       url,
       method: 'GET',
@@ -100,7 +127,11 @@ export class TTSEngine {
     });
   }
 
-  private static async generateOpenAI(text: string, outputFile: string, voice = 'alloy'): Promise<void> {
+  private static async generateOpenAI(
+    text: string,
+    outputFile: string,
+    voice = 'alloy',
+  ): Promise<void> {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       console.warn('OPENAI_API_KEY not found, falling back to Google');
@@ -112,7 +143,7 @@ export class TTSEngine {
         url: 'https://api.openai.com/v1/audio/speech',
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         data: {

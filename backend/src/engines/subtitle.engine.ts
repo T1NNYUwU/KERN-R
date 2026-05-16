@@ -4,14 +4,18 @@ import * as path from 'path';
 export interface SubtitleItem {
   text: string;
   start: number; // seconds
-  end: number;   // seconds
+  end: number; // seconds
 }
 
 export class SubtitleEngine {
   /**
    * Generates an .ass file with styling for Thai/English support
    */
-  static generateASS(items: SubtitleItem[], outputPath: string, options: any = {}): void {
+  static generateASS(
+    items: SubtitleItem[],
+    outputPath: string,
+    options: any = {},
+  ): void {
     const fontSize = options.fontSize || 24;
     const primaryColor = options.primaryColor || '&H00FFFFFF'; // ABGR
     const outlineColor = options.outlineColor || '&H00000000';
@@ -31,19 +35,19 @@ Style: Default,${fontName},${fontSize},${primaryColor},&H000000FF,${outlineColor
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 `;
 
-    items.forEach(item => {
+    items.forEach((item) => {
       const start = this.formatTime(item.start);
       const end = this.formatTime(item.end);
-      let text = item.text.replace(/\n/g, '\\N');
-      
+      const text = item.text.replace(/\n/g, '\\N');
+
       let tags = '';
       if (options.animation === 'fade') {
         tags += '\\fad(300,300)'; // 300ms fade in/out
       } else if (options.animation === 'typewriter') {
         const durMs = (item.end - item.start) * 1000;
-        tags += `\\t(0,${durMs},\\clip(0,0,0,1920))\\t(0,${durMs},\\clip(0,0,1080,1920))`; 
+        tags += `\\t(0,${durMs},\\clip(0,0,0,1920))\\t(0,${durMs},\\clip(0,0,1080,1920))`;
       }
-      
+
       const finalLine = tags ? `{\\${tags}}${text}` : text;
       content += `Dialogue: 0,${start},${end},Default,,0,0,0,,${finalLine}\n`;
     });
