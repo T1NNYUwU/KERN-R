@@ -93,13 +93,21 @@ export default function EditorPage() {
                 const { clips, mediaFiles } = useEditorStore.getState()
                 
                 // 1. Send render request
+                const sanitizedMedia = mediaFiles.map(m => ({
+                  id: m.id,
+                  name: m.name,
+                  type: m.type,
+                  url: m.url,
+                  duration: m.duration
+                }))
+
                 const res = await fetch(`${backendUrl}/api/videos/render`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     id: crypto.randomUUID(),
                     clips,
-                    mediaFiles
+                    mediaFiles: sanitizedMedia
                   })
                 })
                 

@@ -399,7 +399,14 @@ export default function Timeline() {
 
         {/* Right: Zoom Controls */}
         <div className="flex items-center gap-5 text-[#909099]">
-          <button className="hover:text-white transition-colors flex items-center gap-1.5" title="Magnetic Timeline (Auto-Snap)">
+          <button 
+            onClick={() => {
+               // Future: implement magnetic logic in store
+               alert("Magnetic Timeline is currently set to 'Manual' for maximum flexibility. Snap-to-grid is always active.")
+            }}
+            className="hover:text-white transition-colors flex items-center gap-1.5" 
+            title="Magnetic Timeline (Auto-Snap)"
+          >
             <Magnet className="w-4 h-4 text-[#3b82f6]" />
           </button>
           <div className="w-px h-3.5 bg-[#3a3a42]"></div>
@@ -434,7 +441,7 @@ export default function Timeline() {
             {/* Ticks */}
             <div className="flex-1 relative h-full" style={{ cursor: 'text' }}>
               {ticks.map(t => (
-                <div key={t} className="absolute bottom-0 h-full flex flex-col justify-end" style={{ left: t * zoom }}>
+                <div key={`tick-${t}`} className="absolute bottom-0 h-full flex flex-col justify-end" style={{ left: t * zoom }}>
                   <span style={{ position: 'absolute', bottom: 6, left: 4, fontSize: 10, color: '#8a8a93', userSelect: 'none' }}>
                     {fmtTime(t)}
                   </span>

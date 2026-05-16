@@ -135,9 +135,6 @@ interface EditorStore {
 const DEFAULT_TRACK_HEIGHT = 56
 const MAIN_TRACK_HEIGHT = 72
 
-let trackCounter = 1
-let clipCounter = 1
-
 export const useEditorStore = create<EditorStore>()(
   persist(
     (set, get) => ({
@@ -172,13 +169,39 @@ export const useEditorStore = create<EditorStore>()(
           }
         }
         
-        // Clean up unreferenced files in IndexedDB to free disk space
-        for (const dbId of allDbIds) {
-          if (!validIds.has(dbId)) {
-            await deleteMediaFile(dbId)
+        // Self-Healing: Fix duplicate track/clip IDs in persisted state
+        const { tracks, clips } = get()
+        const trackIds = new Set()
+        const clipIds = new Set()
+        let hasChanges = false
+
+        const fixedTracks = tracks.map(t => {
+          if (trackIds.has(t.id)) {
+            hasChanges = true
+            return { ...t, id: `track-${t.type}-${crypto.randomUUID().slice(0, 8)}` }
           }
+          trackIds.add(t.id)
+          return t
+        })
+
+        const fixedClips = clips.map(c => {
+          if (clipIds.has(c.id)) {
+            hasChanges = true
+            return { ...c, id: `clip-${crypto.randomUUID()}` }
+          }
+          clipIds.add(c.id)
+          // Also update trackId if it changed
+          const oldTrackIdx = tracks.findIndex(t => t.id === c.trackId)
+          if (oldTrackIdx !== -1 && fixedTracks[oldTrackIdx].id !== c.trackId) {
+            return { ...c, trackId: fixedTracks[oldTrackIdx].id }
+          }
+          return c
+        })
+
+        if (hasChanges) {
+          set({ tracks: fixedTracks, clips: fixedClips })
         }
-        
+
         set({ mediaFiles: loadedMedia, isInitialized: true })
       },
 
@@ -216,7 +239,7 @@ export const useEditorStore = create<EditorStore>()(
 
       tracks: [],
   addTrack: (type) => {
-    const id = `track-${type}-${++trackCounter}`
+    const id = `track-${type}-${crypto.randomUUID().slice(0, 8)}`
     const name = type === 'video' ? 'Video' : type === 'audio' ? 'Audio' : type === 'text' ? 'Text' : 'Overlay'
     const track: Track = { id, name, type, muted: false, locked: false, height: DEFAULT_TRACK_HEIGHT }
     set(s => ({ tracks: [...s.tracks, track] }))
@@ -360,4 +383,4 @@ function calcDuration(clips: Clip[]): number {
   return Math.max(10, ...clips.map(c => c.startTime + c.duration))
 }
 
-export function makeClipId() { return `clip-${++clipCounter}` }
+export function makeClipId() { return `clip-${crypto.randomUUID()}` }
