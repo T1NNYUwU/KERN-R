@@ -9,8 +9,13 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "KERN-R Studio — Video Editor",
-  description: "Professional browser-based video editor",
+  title: "KERN-R Studio — Professional Video Editor",
+  description: "High-performance browser-based video editing creative studio.",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  }
 }
 
 import { AuthProvider } from "../contexts/AuthContext"
