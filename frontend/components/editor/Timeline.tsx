@@ -7,6 +7,7 @@ import {
   Volume2, VolumeX, Eye, EyeOff, Plus,
   SplitSquareHorizontal, Magnet
 } from 'lucide-react'
+import Waveform from './Waveform'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const LABEL_W = 64
@@ -158,15 +159,17 @@ function ClipBlock({ clip, zoom, trackH, isSelected, onSelect, onDelete, onConte
         />
       )}
 
-      {/* Waveform decoration for audio */}
-      {clip.type === 'audio' && (
-        <div className="absolute inset-0 opacity-40 pointer-events-none overflow-hidden flex items-center">
-          <svg width="100%" height="80%" preserveAspectRatio="none">
-            {Array.from({ length: Math.ceil(width / 3) + 1 }, (_, i) => {
-              const h = 20 + Math.sin(i * 0.9) * 40 + Math.cos(i * 1.7) * 30
-              return <rect key={i} x={i * 3} y={`${50 - h / 2}%`} width={1.5} height={`${h}%`} fill={col.wave} rx={0.5} />
-            })}
-          </svg>
+      {/* Waveform for audio and video (if has audio) */}
+      {(clip.type === 'audio' || (clip.type === 'video' && (clip.volume ?? 1) > -90)) && media && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center px-1">
+          <Waveform 
+            media={media} 
+            color={col.wave} 
+            width={width} 
+            height={trackH - 4} 
+            trimStart={clip.trimStart} 
+            duration={clip.duration}
+          />
         </div>
       )}
 

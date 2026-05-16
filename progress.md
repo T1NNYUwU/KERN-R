@@ -62,7 +62,7 @@
     - [x] Free-form Timeline (ปิด Magnetic ชั่วคราวเพื่อให้ขยับบล็อกได้อิสระ)
     - [x] Playback Engine: วิดีโอเล่นข้ามช่องว่าง (Gaps) ได้ ไม่หยุดเมื่อไม่เจอคลิป
     - [x] Storage Cleanup: ระบบลบไฟล์ใน uploads อัตโนมัติหลังอัปโหลดขึ้น Cloud และปุ่ม Clean Garbage ใน MediaBin
-- [x] Canvas & Inspector (Phase 3)
+    - [x] Canvas & Inspector (Phase 3)
     - [x] Video Transform: Scale X/Y, Position X/Y, Opacity, Rotate (Inspector sliders)
     - [x] Video Transform applied on Canvas (CSS transform)
     - [x] Text Styling: Stroke width/color, Background color, Font Family selector
@@ -79,4 +79,6 @@ KERN-R Studio V3 — Phase 3 (Canvas & Inspector) เสร็จสมบูร
 - Inspector.tsx: เปลี่ยนมาใช้ Tabbed Interface สไตล์ CapCut Online, รองรับหน่วยความดังแบบ เดซิเบล (dB) สำหรับ Audio
 - VideoPreview.tsx: เปลี่ยน Text Bounding Box เป็นขอบขาว มี Rotate Handle ลบ Text Shadow อัตโนมัติ แก้ไขการคำนวณ Duration, ปรับปรุงการเล่น Audio ให้ซิงค์กับ Video และทำ Buffering check
 - Timeline.tsx: แก้บั๊กระบบตัดคลิป (Smart Split) และปิดการดูดคลิปเข้าหากันชั่วคราวให้เลื่อนตำแหน่งได้อย่างอิสระ
-- สิ่งที่เหลือ: Phase 4 (FFmpeg multi-track export) และ Phase 5 (YouTube/TTS/SmartCut)
+- [x] Phase 5: YouTube Downloader & AI Voiceover (100%)
+- [x] Phase 6: Smart Cut & Audio Waveforms (Initial implementation)
+- สิ่งที่เหลือ: Keyframe Engine & Advanced Transitions

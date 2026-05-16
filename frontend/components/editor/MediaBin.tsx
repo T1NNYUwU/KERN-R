@@ -1,7 +1,7 @@
 'use client'
 import { useRef, useCallback, useState } from 'react'
 import { useEditorStore, MediaFile, makeClipId, Clip } from '../../lib/store'
-import { Film, Music, Image as ImageIcon, Plus, Trash2, Import, UploadCloud, Sparkles } from 'lucide-react'
+import { Film, Music, Image as ImageIcon, Plus, Trash2, Import, UploadCloud, Sparkles, Link as LinkIcon, Globe, Loader2 } from 'lucide-react'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -75,6 +75,46 @@ export default function MediaBin() {
   const { mediaFiles, addMedia, removeMedia, clips, tracks, addClip, addTrack } = useEditorStore()
   const inputRef = useRef<HTMLInputElement>(null)
   const [isCleaning, setIsCleaning] = useState(false)
+  const [activeTab, setActiveTab] = useState<'upload' | 'url'>('upload')
+  const [urlInput, setUrlInput] = useState('')
+  const [isFetching, setIsFetching] = useState(false)
+
+  const handleUrlImport = async () => {
+    if (!urlInput.trim()) return
+    setIsFetching(true)
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
+      const res = await fetch(`${backendUrl}/api/videos/preview?url=${encodeURIComponent(urlInput)}`)
+      const data = await res.json()
+      
+      if (data.videoUrl) {
+        // Fetch the file to get Blob and duration if needed
+        const videoRes = await fetch(data.videoUrl)
+        const blob = await videoRes.blob()
+        const file = new File([blob], `${data.title || 'Downloaded'}.mp4`, { type: 'video/mp4' })
+        
+        const id = crypto.randomUUID()
+        await addMedia({
+          id,
+          name: data.title || 'Downloaded Video',
+          type: 'video',
+          file,
+          url: data.videoUrl,
+          duration: data.duration || 10,
+          thumbnail: data.thumbnail
+        })
+        setUrlInput('')
+        setActiveTab('upload')
+      } else {
+        alert(data.error || 'Failed to fetch video info')
+      }
+    } catch (err) {
+      console.error('URL Import error:', err)
+      alert('Failed to download video')
+    } finally {
+      setIsFetching(false)
+    }
+  }
 
   const handleCleanup = async () => {
     if (!confirm('Are you sure you want to clean up server garbage? This will remove all temporary files and local uploads.')) return
@@ -184,15 +224,56 @@ export default function MediaBin() {
       onDrop={e => { e.preventDefault(); processFiles(e.dataTransfer.files) }}
       onDragOver={e => e.preventDefault()}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-3 shrink-0">
-        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Project Media</span>
-        <button
-          onClick={() => inputRef.current?.click()}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 text-indigo-400 text-xs font-semibold transition-colors active:scale-95"
-        >
-          <Import className="w-3.5 h-3.5" /> Import
-        </button>
+      {/* Header & Tabs */}
+      <div className="px-3 pt-3 shrink-0 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Project Media</span>
+          <div className="flex bg-zinc-900 rounded-lg p-0.5 border border-zinc-800">
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all ${activeTab === 'upload' ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-400'}`}
+            >
+              Upload
+            </button>
+            <button
+              onClick={() => setActiveTab('url')}
+              className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all ${activeTab === 'url' ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-400'}`}
+            >
+              Link
+            </button>
+          </div>
+        </div>
+
+        {activeTab === 'upload' ? (
+          <button
+            onClick={() => inputRef.current?.click()}
+            className="flex items-center justify-center gap-1.5 w-full py-2 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/20 text-indigo-400 text-xs font-semibold transition-all active:scale-[0.98]"
+          >
+            <Import className="w-3.5 h-3.5" /> Import Local Files
+          </button>
+        ) : (
+          <div className="flex gap-1.5">
+            <div className="relative flex-1">
+              <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" />
+              <input
+                type="text"
+                value={urlInput}
+                onChange={e => setUrlInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleUrlImport()}
+                placeholder="YouTube or TikTok URL..."
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg py-2 pl-8 pr-3 text-xs text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:border-indigo-500/50 transition-colors"
+              />
+            </div>
+            <button
+              onClick={handleUrlImport}
+              disabled={isFetching || !urlInput.trim()}
+              className={`px-3 rounded-lg flex items-center justify-center transition-all ${isFetching || !urlInput.trim() ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-600/10'}`}
+            >
+              {isFetching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        )}
+
         <input
           ref={inputRef} type="file" multiple accept="video/*,audio/*,image/*" className="hidden"
           onChange={e => e.target.files && processFiles(e.target.files)}

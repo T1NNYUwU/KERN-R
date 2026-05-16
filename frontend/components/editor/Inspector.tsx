@@ -2,8 +2,8 @@
 import { useState } from 'react'
 import { useEditorStore } from '../../lib/store'
 import { 
-  Move, RotateCcw, ZoomIn, Eye, 
-  Type, AlignLeft, Palette, Image as ImageIcon
+  Type, AlignLeft, Palette, Image as ImageIcon,
+  Scissors, Zap, Loader2
 } from 'lucide-react'
 
 const FONT_FAMILIES = [
@@ -50,7 +50,9 @@ function SliderRow({
 
 export default function Inspector() {
   const clip = useEditorStore(s => s.clips.find(c => c.id === s.selectedClipId))
-  const updateClip = useEditorStore(s => s.updateClip)
+  const { updateClip, splitClip, removeClip, clips } = useEditorStore()
+  const mediaFiles = useEditorStore(s => s.mediaFiles)
+  const [isProcessing, setIsProcessing] = useState(false)
   const [mainTab, setMainTab] = useState('Text')
   const [subTab, setSubTab] = useState('Basic')
 
@@ -224,11 +226,117 @@ export default function Inspector() {
                 </div>
               )}
 
-              {/* Audio Volume */}
+              {/* Audio Volume & Smart Cut */}
               {(isAudio || (isMedia && mainTab === 'Audio')) && (
-                <div className="space-y-5">
-                  <span className="text-[13px] font-medium text-white">Volume</span>
-                  <SliderRow label="Volume" value={clip.volume ?? 0} min={-60} max={20} unit="dB" onChange={v => u({ volume: v })} />
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <span className="text-[13px] font-medium text-white">Volume</span>
+                    <SliderRow label="Volume" value={clip.volume ?? 0} min={-60} max={20} unit="dB" onChange={v => u({ volume: v })} />
+                  </div>
+
+                  <div className="pt-6 border-t border-[#25252b] space-y-4">
+                    <div className="flex items-center gap-2 text-indigo-400">
+                      <Zap className="w-4 h-4 fill-current" />
+                      <span className="text-[13px] font-bold uppercase tracking-wider">AI Smart Tools</span>
+                    </div>
+                    
+                    <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4 space-y-3">
+                      <p className="text-[11px] text-zinc-400 leading-relaxed">
+                        Smart Cut automatically detects and removes silent gaps in your video or audio, making it more engaging.
+                      </p>
+                      <button
+                        disabled={isProcessing}
+                        onClick={async () => {
+                          const media = mediaFiles.find(m => m.id === clip.mediaId)
+                          if (!media || !media.file) return
+                          setIsProcessing(true)
+                          try {
+                            const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+                            const buffer = await media.file.arrayBuffer()
+                            const audioBuffer = await audioCtx.decodeAudioData(buffer)
+                            const data = audioBuffer.getChannelData(0)
+                            
+                            const sampleRate = audioBuffer.sampleRate
+                            const threshold = 0.02 // 2% amplitude
+                            const minSilenceLen = 0.5 * sampleRate // 0.5 seconds
+                            
+                            const segments: { start: number; end: number }[] = []
+                            let inSound = false
+                            let soundStart = 0
+                            let silenceCount = 0
+                            
+                            for (let i = 0; i < data.length; i++) {
+                              const amplitude = Math.abs(data[i])
+                              if (amplitude > threshold) {
+                                if (!inSound) {
+                                  inSound = true
+                                  soundStart = i
+                                }
+                                silenceCount = 0
+                              } else {
+                                if (inSound) {
+                                  silenceCount++
+                                  if (silenceCount > minSilenceLen) {
+                                    segments.push({ start: soundStart / sampleRate, end: (i - silenceCount) / sampleRate })
+                                    inSound = false
+                                  }
+                                }
+                              }
+                            }
+                            if (inSound) segments.push({ start: soundStart / sampleRate, end: data.length / sampleRate })
+                            
+                            // Filter segments based on clip's trim
+                            const clipSourceStart = clip.trimStart
+                            const clipSourceEnd = clip.trimStart + clip.duration
+                            const activeSegments = segments.filter(s => s.end > clipSourceStart && s.start < clipSourceEnd)
+
+                            if (activeSegments.length <= 1) {
+                              alert("No significant silence found to cut.")
+                            } else {
+                              // Perform cuts from end to start to avoid index/time shifts
+                              // Actually, for KERN-R, it's easier to just create NEW clips and remove the old one
+                              // because we have a free-form timeline currently.
+                              
+                              let currentTimelineX = clip.startTime
+                              activeSegments.forEach((seg, idx) => {
+                                const segStart = Math.max(seg.start, clipSourceStart)
+                                const segEnd = Math.min(seg.end, clipSourceEnd)
+                                const dur = segEnd - segStart
+                                
+                                if (dur > 0.1) {
+                                  const newClip = {
+                                    ...clip,
+                                    id: `clip-${Date.now()}-${idx}`,
+                                    startTime: currentTimelineX,
+                                    duration: dur,
+                                    trimStart: segStart
+                                  }
+                                  useEditorStore.getState().addClip(newClip)
+                                  currentTimelineX += dur + 0.1 // small gap or tight? tight is better for CapCut
+                                  currentTimelineX -= 0.1 // make it tight
+                                }
+                              })
+                              removeClip(clip.id)
+                            }
+                            audioCtx.close()
+                          } catch (e) {
+                            console.error(e)
+                            alert("Smart Cut failed")
+                          } finally {
+                            setIsProcessing(false)
+                          }
+                        }}
+                        className={`w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-xs font-bold transition-all ${
+                          isProcessing 
+                            ? 'bg-zinc-800 text-zinc-600' 
+                            : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 active:scale-95'
+                        }`}
+                      >
+                        {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Scissors className="w-3.5 h-3.5" />}
+                        {isProcessing ? 'Processing...' : 'Apply Smart Cut'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
