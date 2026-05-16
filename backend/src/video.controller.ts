@@ -94,9 +94,24 @@ export class VideoController {
   @Post('render')
   async renderTimeline(@Body() body: any) {
     const { id, clips, mediaFiles } = body;
-    const jobId = id || crypto.randomUUID();
+    const jobId = id || uuidv4();
     
     this.logger.log(`Adding timeline render job: ${jobId}`);
+
+    // MUST insert to DB first so frontend can poll status
+    const { error } = await this.supabaseService.getClient()
+      .from('video_jobs')
+      .insert({
+        id: jobId,
+        status: 'PENDING',
+        progress: 0
+      });
+
+    if (error) {
+      this.logger.error('Error inserting timeline job:', error);
+      throw new Error('Failed to initialize export job');
+    }
+
     await this.videoQueueService.addVideoJob({
       id: jobId,
       preset_mode: 'timeline',
@@ -285,5 +300,10 @@ export class VideoController {
     }
 
     return data;
+  }
+
+  @Get('health')
+  async health() {
+    return { status: 'ok' };
   }
 }

@@ -23,6 +23,18 @@ export default function EditorPage() {
   
   useEffect(() => {
     initStore()
+    
+    // Check backend health
+    const checkBackend = async () => {
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3005'
+        const res = await fetch(`${backendUrl}/api/videos/health`, { signal: AbortSignal.timeout(3000) })
+        if (!res.ok && res.status !== 404) console.warn('Backend might be unreachable')
+      } catch (e) {
+        console.error('Backend connection failed. Please ensure the backend server is running at :3005')
+      }
+    }
+    checkBackend()
   }, [initStore])
 
   const [activeTab, setActiveTab] = useState('media')
@@ -89,7 +101,7 @@ export default function EditorPage() {
                 setIsExporting(true)
                 setExportProgress(0)
                 
-                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
+                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3005'
                 const { clips, mediaFiles } = useEditorStore.getState()
                 
                 // 1. Send render request

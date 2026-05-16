@@ -293,8 +293,8 @@ export const useEditorStore = create<EditorStore>()(
 
     get().pushHistory()
 
-    const leftId = `clip-${++clipCounter}`
-    const rightId = `clip-${++clipCounter}`
+    const leftId = makeClipId()
+    const rightId = makeClipId()
 
     const left: Clip = { ...clip, id: leftId, duration: splitLocal }
     const right: Clip = {

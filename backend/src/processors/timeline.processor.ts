@@ -19,9 +19,12 @@ export class TimelineProcessor {
 
       for (const mediaId of uniqueMediaIds) {
         const media = mediaFiles.find(m => m.id === mediaId);
-        if (!media) continue;
+        if (!media) {
+          console.warn(`[Timeline] Media ${mediaId} not found in mediaFiles list`);
+          continue;
+        }
 
-        let localPath = path.join(process.cwd(), 'uploads', media.id + path.extname(media.name));
+        let localPath = path.join(process.cwd(), 'uploads', media.id + path.extname(media.name || '.mp4'));
         
         // Ensure uploads directory exists
         const uploadsDir = path.dirname(localPath);
@@ -31,16 +34,17 @@ export class TimelineProcessor {
         if (!fs.existsSync(localPath)) {
             const url = media.url;
             if (url && url.startsWith('http')) {
-                console.log(`Downloading asset from ${url} to ${localPath}`);
+                console.log(`[Timeline] Downloading asset: ${media.name} from ${url}`);
                 try {
-                    // Use ffmpeg to download to ensure we get a compatible format or just use curl
-                    // -y to overwrite, -i for input, -c copy to avoid re-encoding
-                    execSync(`ffmpeg -y -i "${url}" -c copy "${localPath}"`);
+                    execSync(`ffmpeg -y -i "${url}" -c copy "${localPath}"`, { stdio: 'ignore' });
                 } catch (err) {
-                    console.error(`Failed to download ${url}:`, err);
-                    // Try curl as a backup
-                    try { execSync(`curl -L -o "${localPath}" "${url}"`); } catch(e) {}
+                    console.error(`[Timeline] FFmpeg download failed for ${url}, trying curl...`);
+                    try { execSync(`curl -L -o "${localPath}" "${url}"`); } catch(e) {
+                      console.error(`[Timeline] All download methods failed for ${url}`);
+                    }
                 }
+            } else {
+              console.warn(`[Timeline] Asset ${media.name} has no valid URL: ${url}`);
             }
         }
         mediaMap[mediaId] = localPath;
@@ -141,8 +145,15 @@ export class TimelineProcessor {
       const finalPath = path.join(tempDir, 'output.mp4');
       const ffmpegCmd = `ffmpeg -y ${inputArgs.join(' ')} -filter_complex "${filterComplex}" -map "[${lastVideoLabel}]" -map "[aout]" -c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p "${finalPath}"`;
 
-      console.log('Executing FFmpeg:', ffmpegCmd);
-      execSync(ffmpegCmd);
+      console.log('[Timeline] Executing FFmpeg Render...');
+      console.log('[Timeline] Command:', ffmpegCmd);
+      
+      try {
+        execSync(ffmpegCmd, { stdio: 'inherit' });
+      } catch (renderErr) {
+        console.error('[Timeline] FFmpeg Render Command failed!');
+        throw renderErr;
+      }
 
       await this.supabaseService.updateJobStatus(id, 'PROCESSING', 90);
       const publicUrl = await this.supabaseService.uploadFile(finalPath, `exports/${id}.mp4`);
