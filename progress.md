@@ -80,5 +80,5 @@ KERN-R Studio V3 — Phase 3 (Canvas & Inspector) เสร็จสมบูร
 - VideoPreview.tsx: เปลี่ยน Text Bounding Box เป็นขอบขาว มี Rotate Handle ลบ Text Shadow อัตโนมัติ แก้ไขการคำนวณ Duration, ปรับปรุงการเล่น Audio ให้ซิงค์กับ Video และทำ Buffering check
 - Timeline.tsx: แก้บั๊กระบบตัดคลิป (Smart Split) และปิดการดูดคลิปเข้าหากันชั่วคราวให้เลื่อนตำแหน่งได้อย่างอิสระ
 - [x] Phase 5: YouTube Downloader & AI Voiceover (100%)
-- [x] Phase 6: Smart Cut & Audio Waveforms (Initial implementation)
-- สิ่งที่เหลือ: Keyframe Engine & Advanced Transitions
+- [x] Phase 6: Smart Cut, Audio Waveforms, Transitions & Adjustment (100%)
+- สิ่งที่เหลือ: Keyframe Engine & Professional Polish (Effects & Stickers)

@@ -185,9 +185,22 @@ function AudioClipPlayer({ clip, isPlaying, currentTime }: { clip: ReturnType<ty
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = toLinearVolume(clip.volume ?? 0)
+      const baseVol = toLinearVolume(clip.volume ?? 0)
+      
+      // Fade Logic
+      let fadeAlpha = 1
+      const elapsed = currentTime - clip.startTime
+      const remaining = (clip.startTime + clip.duration) - currentTime
+
+      if (clip.fadeIn && elapsed < clip.fadeIn) {
+        fadeAlpha = Math.max(0, elapsed / clip.fadeIn)
+      } else if (clip.fadeOut && remaining < clip.fadeOut) {
+        fadeAlpha = Math.max(0, remaining / clip.fadeOut)
+      }
+
+      audioRef.current.volume = baseVol * fadeAlpha
     }
-  }, [clip.volume])
+  }, [clip.volume, clip.fadeIn, clip.fadeOut, currentTime, clip.startTime, clip.duration])
 
   useEffect(() => {
     if (!audioRef.current) return
@@ -419,7 +432,27 @@ export default function VideoPreview() {
     const posX    = activeClip.posX ?? 0
     const posY    = activeClip.posY ?? 0
     const rotate  = activeClip.rotate ?? 0
-    const opacity = (activeClip.opacity ?? 100) / 100
+    const baseOpacity = (activeClip.opacity ?? 100) / 100
+    
+    // Fade Logic
+    let fadeAlpha = 1
+    const elapsed = currentTime - activeClip.startTime
+    const remaining = (activeClip.startTime + activeClip.duration) - currentTime
+
+    if (activeClip.fadeIn && elapsed < activeClip.fadeIn) {
+      fadeAlpha = elapsed / activeClip.fadeIn
+    } else if (activeClip.fadeOut && remaining < activeClip.fadeOut) {
+      fadeAlpha = remaining / activeClip.fadeOut
+    }
+
+    const opacity = baseOpacity * fadeAlpha
+    
+    // Color filters
+    const b = (activeClip.brightness ?? 100) / 100
+    const c = (activeClip.contrast ?? 100) / 100
+    const s = (activeClip.saturation ?? 100) / 100
+    const filters = `brightness(${b}) contrast(${c}) saturate(${s})`
+
     return {
       maxWidth: '100%',
       maxHeight: '100%',
@@ -427,7 +460,8 @@ export default function VideoPreview() {
       display: 'block',
       transform: `translate(${posX}%, ${posY}%) scale(${scaleX}, ${scaleY}) rotate(${rotate}deg)`,
       opacity,
-      transition: 'transform 0.05s, opacity 0.05s',
+      filter: filters,
+      transition: isPlaying ? 'none' : 'transform 0.05s, opacity 0.05s, filter 0.05s',
     }
   }
 

@@ -45,6 +45,10 @@ export interface Clip {
   posY?: number        // % offset from center, default 0
   opacity?: number     // 0–100, default 100
   rotate?: number      // degrees, default 0
+  // Color Adjustment
+  brightness?: number  // 0-200, default 100
+  contrast?: number    // 0-200, default 100
+  saturation?: number  // 0-200, default 100
   // For text clips
   text?: string
   textColor?: string

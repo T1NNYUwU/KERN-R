@@ -86,6 +86,14 @@ export class TimelineProcessor {
         if (clip.fadeIn)  vfilters += `,fade=t=in:st=0:d=${clip.fadeIn}`;
         if (clip.fadeOut) vfilters += `,fade=t=out:st=${clip.duration - clip.fadeOut}:d=${clip.fadeOut}`;
         
+        // Color EQ
+        const bright = ((clip.brightness ?? 100) - 100) / 100;
+        const contrast = (clip.contrast ?? 100) / 100;
+        const saturation = (clip.saturation ?? 100) / 100;
+        if (bright !== 0 || contrast !== 1 || saturation !== 1) {
+          vfilters += `,eq=brightness=${bright}:contrast=${contrast}:saturation=${saturation}`;
+        }
+        
         filterComplex += `[${inputIdx}:v]${vfilters}[scaled${i}];`;
         // Overlay
         filterComplex += `[${lastVideoLabel}][scaled${i}]overlay=enable='between(t,${clip.startTime},${clip.startTime + clip.duration})'[${outLabel}];`;

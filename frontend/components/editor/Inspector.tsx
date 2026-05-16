@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useEditorStore } from '../../lib/store'
 import { 
-  Type, AlignLeft, Palette, Image as ImageIcon,
+  Move, RotateCcw, Type, AlignLeft, Palette, Image as ImageIcon,
   Scissors, Zap, Loader2
 } from 'lucide-react'
 
@@ -220,8 +220,12 @@ export default function Inspector() {
                   </div>
 
                   <div className="pt-4 border-t border-[#25252b] space-y-4">
-                    <span className="text-[13px] font-medium text-white">Blend</span>
+                    <span className="text-[13px] font-medium text-white">Blend & Transitions</span>
                     <SliderRow label="Opacity" value={clip.opacity ?? 100} min={0} max={100} unit="%" onChange={v => u({ opacity: v })} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <SliderRow label="Fade In" value={clip.fadeIn ?? 0} min={0} max={Math.min(10, clip.duration / 2)} step={0.1} unit="s" onChange={v => u({ fadeIn: v })} />
+                      <SliderRow label="Fade Out" value={clip.fadeOut ?? 0} min={0} max={Math.min(10, clip.duration / 2)} step={0.1} unit="s" onChange={v => u({ fadeOut: v })} />
+                    </div>
                   </div>
                 </div>
               )}
@@ -230,8 +234,12 @@ export default function Inspector() {
               {(isAudio || (isMedia && mainTab === 'Audio')) && (
                 <div className="space-y-6">
                   <div className="space-y-4">
-                    <span className="text-[13px] font-medium text-white">Volume</span>
+                    <span className="text-[13px] font-medium text-white">Volume & Fades</span>
                     <SliderRow label="Volume" value={clip.volume ?? 0} min={-60} max={20} unit="dB" onChange={v => u({ volume: v })} />
+                    <div className="grid grid-cols-2 gap-4 pt-2">
+                      <SliderRow label="Fade In" value={clip.fadeIn ?? 0} min={0} max={Math.min(10, clip.duration / 2)} step={0.1} unit="s" onChange={v => u({ fadeIn: v })} />
+                      <SliderRow label="Fade Out" value={clip.fadeOut ?? 0} min={0} max={Math.min(10, clip.duration / 2)} step={0.1} unit="s" onChange={v => u({ fadeOut: v })} />
+                    </div>
                   </div>
 
                   <div className="pt-6 border-t border-[#25252b] space-y-4">
@@ -340,20 +348,49 @@ export default function Inspector() {
                 </div>
               )}
 
+              {/* Adjustment Tab */}
+              {isMedia && mainTab === 'Adjustment' && (
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] font-medium text-white">Color Adjustment</span>
+                    <button onClick={() => u({ brightness: 100, contrast: 100, saturation: 100 })} className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors" title="Reset Colors">
+                      <RotateCcw className="w-3 h-3 text-[#8a8a93]" />
+                    </button>
+                  </div>
+                  <div className="bg-[#1a1a1f] p-4 rounded-xl border border-[#25252b] space-y-6">
+                    <SliderRow label="Brightness" value={clip.brightness ?? 100} min={0} max={200} unit="%" onChange={v => u({ brightness: v })} />
+                    <SliderRow label="Contrast" value={clip.contrast ?? 100} min={0} max={200} unit="%" onChange={v => u({ contrast: v })} />
+                    <SliderRow label="Saturation" value={clip.saturation ?? 100} min={0} max={200} unit="%" onChange={v => u({ saturation: v })} />
+                  </div>
+                </div>
+              )}
+
             </>
           )}
 
           {/* ── ANIMATION TAB ──────────────────────────────────────────────── */}
           {mainTab === 'Animation' && (
-             <div className="space-y-4">
-                <span className="text-[13px] font-medium text-white">In / Out Animations</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => u({ textAnimation: 'none' })} className={`py-3 rounded-lg border text-[12px] ${clip.textAnimation === 'none' || !clip.textAnimation ? 'border-[#3b82f6] text-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#25252b] text-[#c1c1c8] hover:border-[#3a3a42]'}`}>None</button>
-                  <button onClick={() => u({ textAnimation: 'fade' })} className={`py-3 rounded-lg border text-[12px] ${clip.textAnimation === 'fade' ? 'border-[#3b82f6] text-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#25252b] text-[#c1c1c8] hover:border-[#3a3a42]'}`}>Fade In</button>
-                  <button onClick={() => u({ textAnimation: 'slide-up' })} className={`py-3 rounded-lg border text-[12px] ${clip.textAnimation === 'slide-up' ? 'border-[#3b82f6] text-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#25252b] text-[#c1c1c8] hover:border-[#3a3a42]'}`}>Slide Up</button>
-                  <button onClick={() => u({ textAnimation: 'pop' })} className={`py-3 rounded-lg border text-[12px] ${clip.textAnimation === 'pop' ? 'border-[#3b82f6] text-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#25252b] text-[#c1c1c8] hover:border-[#3a3a42]'}`}>Pop In</button>
+            <div className="space-y-6">
+              {isText ? (
+                <div className="space-y-4">
+                  <span className="text-[13px] font-medium text-white">In / Out Animations</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => u({ textAnimation: 'none' })} className={`py-3 rounded-lg border text-[12px] ${clip.textAnimation === 'none' || !clip.textAnimation ? 'border-[#3b82f6] text-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#25252b] text-[#c1c1c8] hover:border-[#3a3a42]'}`}>None</button>
+                    <button onClick={() => u({ textAnimation: 'fade' })} className={`py-3 rounded-lg border text-[12px] ${clip.textAnimation === 'fade' ? 'border-[#3b82f6] text-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#25252b] text-[#c1c1c8] hover:border-[#3a3a42]'}`}>Fade In</button>
+                    <button onClick={() => u({ textAnimation: 'slide-up' })} className={`py-3 rounded-lg border text-[12px] ${clip.textAnimation === 'slide-up' ? 'border-[#3b82f6] text-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#25252b] text-[#c1c1c8] hover:border-[#3a3a42]'}`}>Slide Up</button>
+                    <button onClick={() => u({ textAnimation: 'pop' })} className={`py-3 rounded-lg border text-[12px] ${clip.textAnimation === 'pop' ? 'border-[#3b82f6] text-[#3b82f6] bg-[#3b82f6]/10' : 'border-[#25252b] text-[#c1c1c8] hover:border-[#3a3a42]'}`}>Pop In</button>
+                  </div>
                 </div>
-             </div>
+              ) : (
+                <div className="space-y-4">
+                  <span className="text-[13px] font-medium text-white">Transitions</span>
+                  <div className="bg-[#1a1a1f] p-4 rounded-xl border border-[#25252b] space-y-6">
+                    <SliderRow label="Fade In Duration" value={clip.fadeIn ?? 0} min={0} max={Math.min(10, clip.duration / 2)} step={0.1} unit="s" onChange={v => u({ fadeIn: v })} />
+                    <SliderRow label="Fade Out Duration" value={clip.fadeOut ?? 0} min={0} max={Math.min(10, clip.duration / 2)} step={0.1} unit="s" onChange={v => u({ fadeOut: v })} />
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
         </div>
