@@ -29,6 +29,9 @@ Backend จำเป็นต้องมีสภาพแวดล้อมท
    - `SUPABASE_URL`: ...
    - `SUPABASE_SERVICE_ROLE_KEY`: (ต้องใช้ Service Role เพื่อให้ Backend เขียนข้อมูลลง DB ได้)
    - `CORS_ORIGIN`: URL ของ Frontend บน Vercel
+   - `REDIS_HOST`: (จาก .env)
+   - `REDIS_PORT`: (จาก .env)
+   - `REDIS_PASSWORD`: (จาก .env)
 
 ### Option B: VPS (Docker Compose)
 หากต้องการรันบน Server ตัวเอง (เช่น Ubuntu):
