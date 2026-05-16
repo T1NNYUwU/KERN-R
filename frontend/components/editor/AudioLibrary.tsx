@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { useEditorStore, makeClipId, MediaFile, Clip } from '../../lib/store'
 import { Music, Play, Plus, Loader2, Sparkles, MessageSquare } from 'lucide-react'
 
+import { useAuth } from '../../contexts/AuthContext'
+
 const VOICES = [
   { id: 'th-TH-NiwatNeural', name: 'Niwat (TH)', gender: 'Male' },
   { id: 'th-TH-PremwadeeNeural', name: 'Premwadee (TH)', gender: 'Female' },
@@ -11,13 +13,14 @@ const VOICES = [
 ]
 
 export default function AudioLibrary() {
+  const { user } = useAuth()
   const [text, setText] = useState('')
   const [selectedVoice, setSelectedVoice] = useState(VOICES[0].id)
   const [isGenerating, setIsGenerating] = useState(false)
   const { addMedia, tracks, addTrack, clips, addClip } = useEditorStore()
 
   const generateTTS = async () => {
-    if (!text.trim()) return
+    if (!text.trim() || !user) return
     setIsGenerating(true)
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
@@ -54,7 +57,7 @@ export default function AudioLibrary() {
           duration
         }
 
-        await addMedia(media)
+        await addMedia(media, user.id)
         
         // Auto-add to timeline
         let track = tracks.find(t => t.type === 'audio')

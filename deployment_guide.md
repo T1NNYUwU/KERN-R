@@ -27,7 +27,7 @@ Backend จำเป็นต้องมีสภาพแวดล้อมท
 4. เพิ่ม **Environment Variables**:
    - `PORT`: `3005`
    - `SUPABASE_URL`: ...
-   - `SUPABASE_SERVICE_ROLE_KEY`: (ต้องใช้ Service Role เพื่อให้ Backend เขียนข้อมูลลง DB ได้)
+   - `SUPABASE_KEY`: (นำ Service Role Key มาใส่เพื่อให้ Backend มีสิทธิ์จัดการ Database และ Storage ได้)
    - `CORS_ORIGIN`: URL ของ Frontend บน Vercel
    - `REDIS_HOST`: (จาก .env)
    - `REDIS_PORT`: (จาก .env)
