@@ -40,6 +40,7 @@ export default function EditorPage() {
   const [activeTab, setActiveTab] = useState('media')
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(0)
+  const [finalVideoUrl, setFinalVideoUrl] = useState<string | null>(null)
 
   const navItems = [
     { id: 'media', icon: FolderClosed, label: 'Media' },
@@ -136,17 +137,20 @@ export default function EditorPage() {
                     
                     if (data.status === 'COMPLETED') {
                       clearInterval(pollInterval)
-                      setIsExporting(false)
-                      // Download
-                      const a = document.createElement('a')
+                      setExportProgress(100)
+                      setFinalVideoUrl(data.final_video_url)
+                      
+                      // Auto-download attempt
+                      const a = document.body.appendChild(document.createElement('a'))
                       a.href = data.final_video_url
                       a.target = '_blank'
-                      a.download = `KERN-R-${jobId}.mp4`
+                      a.download = `KERN-R-Export.mp4`
                       a.click()
+                      document.body.removeChild(a)
                     } else if (data.status === 'FAILED') {
                       clearInterval(pollInterval)
                       setIsExporting(false)
-                      alert('Export failed on server.')
+                      alert('Export failed on server. Please check backend logs.')
                     }
                   } catch (e) {
                     console.error('Polling error:', e)
@@ -173,26 +177,48 @@ export default function EditorPage() {
       {isExporting && (
         <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 flex flex-col items-center w-80 shadow-2xl">
-            <h2 className="text-xl font-bold text-white mb-6">Exporting Video</h2>
-            
-            {/* Circular Progress */}
-            <div className="relative w-24 h-24 mb-6">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle cx="48" cy="48" r="44" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="none" />
-                <circle cx="48" cy="48" r="44" stroke="#7c3aed" strokeWidth="8" fill="none" 
-                  strokeDasharray={`${2 * Math.PI * 44}`} 
-                  strokeDashoffset={`${2 * Math.PI * 44 * (1 - exportProgress / 100)}`}
-                  className="transition-all duration-300 ease-out"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-bold text-white">{exportProgress}%</span>
+            {exportProgress === 100 && finalVideoUrl ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-2">
+                  <Download className="w-8 h-8 text-emerald-400" />
+                </div>
+                <h3 className="text-emerald-400 font-bold">Export Ready!</h3>
+                <a 
+                  href={finalVideoUrl} 
+                  target="_blank" 
+                  download="KERN-R-Video.mp4"
+                  className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-center shadow-lg transition-all"
+                >
+                  Download Now
+                </a>
+                <button 
+                  onClick={() => { setIsExporting(false); setFinalVideoUrl(null); }}
+                  className="text-xs text-zinc-500 hover:text-zinc-300 mt-2"
+                >
+                  Close
+                </button>
               </div>
-            </div>
-            
-            <p className="text-sm text-zinc-400 text-center">
-              Please don't close this tab.<br/>Processing with FFmpeg...
-            </p>
+            ) : (
+              <>
+                <div className="relative w-24 h-24 mb-6">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="48" cy="48" r="44" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="none" />
+                    <circle cx="48" cy="48" r="44" stroke="#7c3aed" strokeWidth="8" fill="none" 
+                      strokeDasharray={`${2 * Math.PI * 44}`} 
+                      strokeDashoffset={`${2 * Math.PI * 44 * (1 - exportProgress / 100)}`}
+                      className="transition-all duration-300 ease-out"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xl font-bold text-white">{exportProgress}%</span>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-zinc-400 text-center">
+                  Please don't close this tab.<br/>Processing with FFmpeg...
+                </p>
+              </>
+            )}
           </div>
         </div>
       )}

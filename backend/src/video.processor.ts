@@ -57,6 +57,8 @@ export class VideoProcessor implements OnModuleInit {
           port: parseInt(process.env.REDIS_PORT || '6379', 10),
           password: process.env.REDIS_PASSWORD || undefined,
         },
+        lockDuration: 60000, // 60 seconds
+        stalledInterval: 60000,
       },
     );
 

@@ -30,6 +30,8 @@ Thumbs.db
 # Electron
 release/
 
-# Uploads
+# Uploads & Temp
 backend/uploads/
+backend/temp/
 uploads/
+temp/
