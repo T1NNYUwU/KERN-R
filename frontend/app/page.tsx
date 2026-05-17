@@ -158,7 +158,7 @@ export default function EditorPage() {
 
         {/* ── LEFT SIDEBAR ── */}
         <aside style={{ width: 80, background: C.surface0, borderRight: `1px solid ${C.borderBright}`, boxShadow: '2px 0 12px rgba(0,0,0,0.3)' }}
-          className="shrink-0 flex flex-col items-center pt-3 pb-3 gap-0.5 z-20">
+          className="shrink-0 flex flex-col items-center pt-4 pb-4 gap-0.5 z-20">
 
           {navItems.map(({ id, icon: Icon, label }) => {
             const active = activeTab === id
@@ -179,15 +179,18 @@ export default function EditorPage() {
           })}
 
           {/* Profile button */}
-          <button onClick={() => setShowSignOutModal(true)}
-            style={{ marginTop: 'auto', width: 40, height: 40, borderRadius: '50%', border: `1.5px solid ${C.borderBright}`,
-              overflow: 'hidden', cursor: 'pointer', background: C.surface2,
-              display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            title={`Sign out (${user?.email})`}>
-            {user?.user_metadata?.avatar_url
-              ? <img src={user.user_metadata.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <User size={16} color={C.textMuted} />}
-          </button>
+          <div style={{ marginTop: 'auto', padding: '8px 0 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <button onClick={() => setShowSignOutModal(true)}
+              style={{ width: 42, height: 42, borderRadius: '50%', border: `1.5px solid ${C.borderBright}`,
+                overflow: 'hidden', cursor: 'pointer', background: C.surface2,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)', transition: 'all 0.15s' }}
+              title={`Sign out (${user?.email})`}>
+              {user?.user_metadata?.avatar_url
+                ? <img src={user.user_metadata.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <User size={16} color={C.textMuted} />}
+            </button>
+          </div>
         </aside>
 
         {/* ── MAIN WORKSPACE ── */}
@@ -198,7 +201,7 @@ export default function EditorPage() {
 
             {/* Media Library */}
             <div style={{ width: 300, background: C.surface1, borderRight: `1px solid ${C.borderBright}`, display: 'flex', flexDirection: 'column', boxShadow: '2px 0 8px rgba(0,0,0,0.2)' }}>
-              <div style={{ padding: '10px 16px 8px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ padding: '12px 16px 10px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{navItems.find(i => i.id === activeTab)?.label}</span>
                 <span style={{ fontSize: 10, color: C.textMuted, padding: '2px 8px', background: C.surface2, borderRadius: 99, border: `1px solid ${C.border}` }}>Library</span>
               </div>

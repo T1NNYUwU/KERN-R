@@ -33,6 +33,7 @@ export default function ConfirmModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onCancel}
+            style={{ zIndex: 1 }}
             className="absolute inset-0 bg-black/70 backdrop-blur-md"
           />
 
@@ -42,9 +43,19 @@ export default function ConfirmModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 30 }}
             transition={{ type: "spring", damping: 25, stiffness: 350 }}
-            className="relative w-full max-w-[360px] bg-[#1a1a1c] border border-white/10 rounded-[24px] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.7)] overflow-hidden"
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              width: '90%',
+              maxWidth: '360px',
+              backgroundColor: '#18181b',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '24px',
+              boxShadow: '0 24px 50px -12px rgba(0,0,0,0.6)',
+              overflow: 'hidden'
+            }}
           >
-            <div className="p-8">
+            <div style={{ padding: '32px 24px 28px 24px' }}>
               {/* Icon & Title Area */}
               <div className="flex flex-col items-center text-center mb-8">
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-5 ${
@@ -59,20 +70,41 @@ export default function ConfirmModal({
               </div>
 
               {/* Actions Area with proper spacing */}
-              <div className="flex flex-col gap-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button
                   onClick={onConfirm}
-                  className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all active:scale-[0.96] ${
-                    type === 'danger' 
-                      ? 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/20' 
-                      : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20'
-                  }`}
+                  style={{
+                    width: '100%',
+                    padding: '12px 20px',
+                    borderRadius: '14px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    color: '#ffffff',
+                    border: 'none',
+                    backgroundColor: type === 'danger' ? '#dc2626' : '#4f46e5',
+                    boxShadow: type === 'danger' ? '0 8px 16px rgba(220, 38, 38, 0.25)' : '0 8px 16px rgba(79, 70, 229, 0.25)',
+                    transition: 'all 0.2s'
+                  }}
+                  className="active:scale-[0.97] hover:brightness-110"
                 >
                   {confirmText}
                 </button>
                 <button
                   onClick={onCancel}
-                  className="w-full py-3.5 rounded-xl bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 font-bold text-sm transition-all active:scale-[0.96] border border-white/5"
+                  style={{
+                    width: '100%',
+                    padding: '12px 20px',
+                    borderRadius: '14px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    color: '#a1a1aa',
+                    backgroundColor: 'rgba(39, 39, 42, 0.6)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    transition: 'all 0.2s'
+                  }}
+                  className="active:scale-[0.97] hover:bg-zinc-800/80 hover:text-zinc-200"
                 >
                   {cancelText}
                 </button>
@@ -82,7 +114,23 @@ export default function ConfirmModal({
             {/* Close button in corner */}
             <button 
               onClick={onCancel}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-zinc-500 hover:text-white transition-all"
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#71717a',
+                transition: 'all 0.2s'
+              }}
+              className="hover:bg-white/10 hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>

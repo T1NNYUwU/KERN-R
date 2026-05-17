@@ -42,8 +42,8 @@
 
 ### 🟢 Phase 4: Advanced Export Engine (FFmpeg) - DONE
 - [x] เขียนตัวแปลคำสั่ง Timeline ให้กลายเป็น `ffmpeg -filter_complex` สำหรับทำ Multi-track 
-- [x] การจัดการ Scale และ Position ให้วิดีโอซ้อนกันได้ตอน Export
-- [x] Burn-in Text (ฝังข้อความลงในวิดีโอ) และ Audio Mixing
+- [x] การจัดการ Scale และ Position ให้วิดีโอซ้อนกันได้ตอน Export (รองรับ 'contain' auto-fitting สำหรับคลิปแนวตั้งและสัดส่วนอื่นๆ ป้องกันลายน้ำหรือภาพล้นขอบ 100%)
+- [x] Burn-in Text (ฝังข้อความลงในวิดีโอ) และ Audio Mixing (ปรับสเกลขนาดข้อความตรงกับขนาดที่ตาเห็นในพรีวิวจริง 100%)
 - [x] ระบบ Cloud Rendering ส่งงานไปทำบน Backend และแจ้งผลกลับทางหน้าเว็บ (Polling)
 
 - [x] **AI Voiceover (Text to Speech):** เชื่อมต่อกับ Edge TTS / OpenAI สำหรับทำเสียงพากย์

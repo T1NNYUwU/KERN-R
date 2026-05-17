@@ -1,27 +1,31 @@
 KERN-R Studio — สุดยอดโปรแกรมตัดต่อวิดีโอ AI ครบวงจร
 
-ความสามารถปัจจุบัน (V3.1 - Refined Pro Edition):
+ความสามารถปัจจุบัน (V3.3 - CapCut Pro Unified Edition):
 
 1. ระบบ Core Architecture ใหม่:
    - 🗄️ Local Database (IndexedDB): บันทึก Media Files ลง Browser ป้องกันไฟล์หายเมื่อ Refresh
    - 💾 Auto-save System: บันทึก Timeline State ลง LocalStorage อัตโนมัติทุกการเคลื่อนไหว
    - 🔄 History Engine: ระบบ Undo/Redo สูงสุด 50 ขั้นตอน สำหรับทุก Action
    - 🔒 Multi-user Security: แยกข้อมูล (Projects/Media) ของแต่ละ User โดยสมบูรณ์ด้วย Supabase & IndexedDB
-   - 🌐 Next.js 16 & Vercel Production Ready: เปลี่ยนมาใช้ Next.js 16 Middleware (getAll/setAll) ที่เสถียร 100% บน Edge Runtime และทำงานร่วมกับ Railway Backend ในรูปแบบ Multi-service Production Deployed
-   - 🔗 Custom Domain Integrated: สถาปัตยกรรมรองรับการเชื่อมต่อกับ Custom Domainหลัก (`https://kerntemplate.online`) ผ่านระบบ DNS, Vercel Redirect, Supabase OAuth Callback และ Railway CORS Origin อย่างสมบูรณ์แบบ พร้อมระบบ URL Endpoint Helper ป้องกันปัญหา Double-Slash (`//`) และ 404 บั๊กบนโปรดักชัน 100%
+   - 🌐 Next.js 16 & Vercel Production Ready: เปลี่ยนมาใช้ Next.js 16 Middleware ที่เสถียร 100% บน Edge Runtime และทำงานร่วมกับ Railway Backend ในรูปแบบ Multi-service Production Deployed
+   - 🔗 Custom Domain Integrated: สถาปัตยกรรมรองรับการเชื่อมต่อกับ Custom Domain หลัก (`https://kerntemplate.online`) ผ่านระบบ DNS, Vercel Redirect, Supabase OAuth Callback และ Railway CORS Origin อย่างสมบูรณ์แบบ พร้อมระบบ URL Endpoint Helper ป้องกันปัญหา Double-Slash (`//`) และ 404 บั๊กบนโปรดักชัน 100%
 
-2. Interface & UX (CapCut Pro Inspired):
+2. Interface & UX (CapCut Pro Inspired & Spacing Polish):
    - 🌑 Dark Slate Aesthetics: ธีมมืดระดับมืออาชีพ พร้อมความลึก (Depth) และมิติ (Shadows)
    - 🛠️ Modern Toolbar: ระบบ Pill containers สำหรับเครื่องมือตัดต่อ และปุ่มแม่เหล็ก (Magnetic Timeline)
    - 🎞️ Pro Timeline: ระบบแทร็กที่แยก Video/Audio/Text ชัดเจน พร้อมไอคอนบ่งชี้
-   - 📦 Media Library: ระบบจัดการไฟล์สื่อแบบแบ่งหมวดหมู่ (Upload/Link) พร้อมพรีวิวแบบ Real-time
+   - 📦 Media Library: ระบบจัดการไฟล์สื่อแบบ Single Unified Screen (รวมเอาแท็บ Upload และ URL Import วางไว้หน้าจอเดียวกันตาม Mockup สเก็ตช์ลายมือของผู้ใช้) สะดวก รวดเร็ว ไม่สลับหน้าจอ และแสดงผลไฟล์พรีวิวแบบ Real-time
+   - 📥 Unified URL & Icon Precision Fix: แก้ไขตำแหน่งรูปโลก (Globe) และช่องกรอก URL ด้วย **Inline Styles (`style={{ left: '12px' }}` และ `style={{ paddingLeft: '36px' }}`)** ป้องกันปัญหารูปโลกเบียดทับ placeholder อย่างถาวร 100%
+   - 📥 Sleek Tall Import & Loading States: ปุ่ม Import Files ดีไซน์ใหม่ที่มีความสูงเด่นชัดและมีมิติแบนราบสไตล์ CapCut Pro พร้อมระบบจำกัดขนาดไฟล์ไม่เกิน 50MB และแสดง Loading Spinner ผสานเอฟเฟกต์ pulse บ่งชี้สถานะการอัปโหลดเรียลไทม์ ป้องกันการเบิ้ลคลิกซ้ำซ้อน 100%
    - 📢 Smart Notifications: ระบบแจ้งเตือน (Toasts) แบบสวยงามและไม่รบกวนการทำงาน
-   - 🚨 Stacked Modals: กล่องโต้ตอบการยืนยันแบบมีมิติและระยะห่างที่ถูกต้อง (Spacing Optimized)
+   - 🚨 Stacked Modals (ConfirmModal): ปรับปรุงหน้าต่างยืนยันการทำงานแบบ CapCut Pro (เช่น ปุ่ม Sign Out / ยืนยันต่างๆ) ให้เป็นระเบียบสวยหรู ด้วยการถอด `overflow-hidden` และจัดตำแหน่งด้วย **Inline Styles (Padding 32px 24px 28px และขอบโค้งมน 24px)** ป้องกันปัญหามุมปุ่มล้นขอบหรือติดขอบล่างได้อย่างสมบูรณ์แบบ 100%
 
 3. ระบบการเรนเดอร์และประมวลผล:
    - ⚡ Hybrid Rendering: เรนเดอร์ฝั่ง Client (พรีวิว) และฝั่ง Server (ส่งออก)
    - 🎥 FFmpeg Integration: ประมวลผลวิดีโอระดับสูงบน Backend รองรับการใส่ Transition และ Text Overlay
-   - 🖥️ Hardware Acceleration: รองรับการเรนเดอร์ผ่าน NVENC (NVIDIA) เพื่อความเร็วสูงสุด
+   - 🖥️ Hardware Acceleration: รองรับการเรนเดอร์ผ่าน NVENC (NVIDIA) เพื่อความเร็วสูงสุด พร้อม Smart Encoder Fallback อัตโนมัติ (GPU -> CPU) เมื่อพบปัญหาไดรเวอร์
+   - 📏 Aspect Ratio & Padding Auto-alignment: ปรับสัดส่วนคลิปและวิดีโอ (เช่น 9:16 แนวตั้ง) ให้อยู่ในกรอบส่งออก 1080p แนวนอนแบบ 'contain' พร้อมถมดำกึ่งกลางสวยงาม ป้องกันปัญหาวิดีโอโดนครอปขอบล่าง/บน และลบส่วนลายน้ำ (เช่น `@RankGoBig`) ออกโดยเด็ดขาด 100%
+   - 🔠 Font Size Precision Matching: ออกแบบระบบคูณขนาดตัวหนังสือสัมพันธ์กับ Canvas Preview ในชีวิตจริง ทำให้ขนาดและพิกัดที่ส่งออกออกมาตรงกับที่ตาเห็นในบราวเซอร์ 100%
    - 🏥 Backend Health Monitor: ตรวจสอบการเชื่อมต่อกับเซิร์ฟเวอร์เรนเดอร์แบบ Real-time บนหน้าแอป
 
 4. ฟีเจอร์ตัดต่อพื้นฐาน:
@@ -36,4 +40,4 @@ KERN-R Studio — สุดยอดโปรแกรมตัดต่อว�
    - 🧪 Dual Service CI Testing: แยกทดสอบกระบวนการบิลด์และการทดสอบของ Frontend (Next.js 16) และ Backend (NestJS) โดยอัตโนมัติ มั่นใจ 100% ว่าไม่มีการคอมไพล์โค้ดพังก่อนขึ้นระบบจริง
    - ⏰ Multi-Option Keep-Alive Cron Job: ระบบตั้งเวลาปลุกเซิร์ฟเวอร์หลังบ้านอัตโนมัติทุก 15 นาที เพื่อแก้ไขปัญหา Cold Start และตรวจสุขภาพของ API Render Server อยู่เสมอ (รองรับทั้งผ่าน GitHub Actions keep-alive.yml หรือเชื่อมต่อไปยังบริการภายนอกอย่าง cron-job.org โดยตรง)
 
-สถานะ: V3.1 Production Ready - มุ่งเน้นความสวยงาม มิติของดีไซน์ และความเสถียรในการใช้งาน
+สถานะ: V3.3 Production Ready - สมบูรณ์แบบด้วย Inline Styles ในส่วนสำคัญ ป้องกันการทับซ้อนและจัด Spacing หรูหราแน่นอน 100%

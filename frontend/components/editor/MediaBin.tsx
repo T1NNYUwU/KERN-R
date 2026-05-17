@@ -57,41 +57,56 @@ export default function MediaBin() {
   const inputRef = useRef<HTMLInputElement>(null)
   
   const [isCleaning, setIsCleaning] = useState(false)
-  const [activeTab, setActiveTab] = useState<'upload' | 'url'>('upload')
   const [urlInput, setUrlInput] = useState('')
   const [isFetching, setIsFetching] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
 
   const processFiles = useCallback(async (files: FileList) => {
     if (!user) return
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      const isVideo = file.type.startsWith('video')
-      const isAudio = file.type.startsWith('audio')
-      const isImage = file.type.startsWith('image')
-      if (!isVideo && !isAudio && !isImage) continue
-
-      const id = crypto.randomUUID()
-      const localUrl = URL.createObjectURL(file)
-      const type: MediaFile['type'] = isVideo ? 'video' : isAudio ? 'audio' : 'image'
-      const duration = (isVideo || isAudio) ? await getMediaDuration(file) : 10
-      const thumbnail = isVideo ? await captureThumb(localUrl) : (isImage ? localUrl : undefined)
-
-      try {
-        const formData = new FormData()
-        formData.append('file', file)
-        const backendUrl = getBackendUrl()
-        const res = await fetch(`${backendUrl}/api/videos/upload`, { method: 'POST', body: formData })
-        const data = await res.json()
+    setIsUploading(true)
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
         
-        if (data.url) {
-          await addMedia({ id, name: file.name, type, file, url: data.url, duration, thumbnail }, user.id)
-        } else {
-          throw new Error('Upload failed')
+        // จำกัดขนาดไฟล์ไม่เกิน 50MB (50 * 1024 * 1024 bytes)
+        const maxSizeBytes = 50 * 1024 * 1024
+        if (file.size > maxSizeBytes) {
+          toast.error(`ไฟล์ "${file.name}" มีขนาดใหญ่เกิน 50MB (จำกัดขนาดไม่เกิน 50MB)`)
+          continue
         }
-      } catch (err) {
-        console.error('Upload error, falling back to local storage:', err)
-        await addMedia({ id, name: file.name, type, file, url: localUrl, duration, thumbnail }, user.id)
+
+        const isVideo = file.type.startsWith('video')
+        const isAudio = file.type.startsWith('audio')
+        const isImage = file.type.startsWith('image')
+        if (!isVideo && !isAudio && !isImage) continue
+
+        const id = crypto.randomUUID()
+        const localUrl = URL.createObjectURL(file)
+        const type: MediaFile['type'] = isVideo ? 'video' : isAudio ? 'audio' : 'image'
+        const duration = (isVideo || isAudio) ? await getMediaDuration(file) : 10
+        const thumbnail = isVideo ? await captureThumb(localUrl) : (isImage ? localUrl : undefined)
+
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+          const backendUrl = getBackendUrl()
+          const res = await fetch(`${backendUrl}/api/videos/upload`, { method: 'POST', body: formData })
+          const data = await res.json()
+          
+          if (data.url) {
+            await addMedia({ id, name: file.name, type, file, url: data.url, duration, thumbnail }, user.id)
+          } else {
+            throw new Error('Upload failed')
+          }
+        } catch (err) {
+          console.error('Upload error, falling back to local storage:', err)
+          await addMedia({ id, name: file.name, type, file, url: localUrl, duration, thumbnail }, user.id)
+        }
       }
+    } catch (err) {
+      console.error('Error processing files:', err)
+    } finally {
+      setIsUploading(false)
     }
   }, [addMedia, user])
 
@@ -113,7 +128,6 @@ export default function MediaBin() {
           file, url: data.videoUrl, duration: data.duration || 10, thumbnail: data.thumbnail
         }, user.id)
         setUrlInput('')
-        setActiveTab('upload')
         toast.success('Imported video from URL')
       } else {
         toast.error(data.error || 'Failed to fetch video info')
@@ -157,78 +171,95 @@ export default function MediaBin() {
       onDragOver={e => e.preventDefault()}
     >
       {/* Header Area */}
-      <div className="px-6 pt-7 pb-5 shrink-0 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-1.5 h-5 bg-indigo-500 rounded-full shadow-[0_0_12px_rgba(91,92,246,0.5)]"></div>
-            <span className="text-[13px] font-bold text-zinc-200 uppercase tracking-[0.25em]">Media Library</span>
-          </div>
-          <div className="flex items-center gap-1.5 opacity-40">
-             <div className="w-1.5 h-1.5 rounded-full bg-zinc-500"></div>
-             <span className="text-[10px] font-bold text-zinc-500 uppercase">Project</span>
-          </div>
-        </div>
+      <div className="px-4 pt-4 pb-3 shrink-0">
 
-        {/* Improved Segmented Control */}
-        <div className="flex bg-black/40 rounded-[20px] p-1.5 border border-white/5 shadow-2xl">
-          <button
-            onClick={() => setActiveTab('upload')}
-            className={`flex-1 flex items-center justify-center gap-3 py-3 rounded-2xl text-[12px] font-bold transition-all duration-300 ${activeTab === 'upload' ? 'bg-[#2a2a2e] text-white shadow-xl border border-white/10' : 'text-zinc-500 hover:text-zinc-400 hover:bg-white/5'}`}
-          >
-            <UploadCloud className={`w-4 h-4 ${activeTab === 'upload' ? 'text-indigo-400' : ''}`} />
-            Upload
-          </button>
-          <button
-            onClick={() => setActiveTab('url')}
-            className={`flex-1 flex items-center justify-center gap-3 py-3 rounded-2xl text-[12px] font-bold transition-all duration-300 ${activeTab === 'url' ? 'bg-[#2a2a2e] text-white shadow-xl border border-white/10' : 'text-zinc-500 hover:text-zinc-400 hover:bg-white/5'}`}
-          >
-            <Globe className={`w-4 h-4 ${activeTab === 'url' ? 'text-indigo-400' : ''}`} />
-            Link
-          </button>
-        </div>
-
-        <div className="pt-1">
-          {activeTab === 'upload' ? (
-            <button
-              onClick={() => inputRef.current?.click()}
-              className="group flex items-center justify-center gap-3 w-full py-3.5 rounded-[20px] bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 text-sm font-bold transition-all active:scale-[0.96] hover:shadow-[0_0_40px_rgba(79,70,229,0.2)]"
-            >
-              <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" /> 
-              Import Files
-            </button>
-          ) : (
-            <div className="flex gap-3">
-              <div className="relative flex-1 group">
-                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 group-focus-within:text-indigo-400 transition-colors" />
-                <input
-                  type="text" value={urlInput} onChange={e => setUrlInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleUrlImport()}
-                  placeholder="Paste video URL here..."
-                  className="w-full bg-black/40 border border-white/5 rounded-[20px] py-3.5 pl-11 pr-4 text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:border-indigo-500/40 focus:ring-1 focus:ring-indigo-500/20 transition-all"
-                />
-              </div>
-              <button
-                onClick={handleUrlImport} disabled={isFetching || !urlInput.trim()}
-                className={`px-5 rounded-[20px] flex items-center justify-center transition-all active:scale-90 ${isFetching || !urlInput.trim() ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-white/5' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-[0_8px_20px_rgba(79,70,229,0.3)]'}`}
-              >
-                {isFetching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
-              </button>
+        {/* 🌐 Link Input Section */}
+        <div className="flex flex-col gap-2">
+          <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.15em]">
+            Import from URL
+          </div>
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1 group">
+              <Globe 
+                style={{ left: '12px' }}
+                className="absolute top-1/2 -translate-y-1/2 w-[14px] h-[14px] text-zinc-500 group-focus-within:text-indigo-400 transition-colors pointer-events-none z-10" 
+              />
+              <input
+                type="text" 
+                value={urlInput} 
+                onChange={e => setUrlInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleUrlImport()}
+                placeholder="Paste URL here..."
+                style={{ paddingLeft: '36px' }}
+                className="w-full h-10 bg-zinc-900/80 border border-white/[0.08] rounded-xl pr-3 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/15 transition-all"
+              />
             </div>
-          )}
+            <button
+              onClick={handleUrlImport} disabled={isFetching || !urlInput.trim()}
+              title="Import from URL"
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 shrink-0 ${isFetching || !urlInput.trim() ? 'bg-zinc-800/80 text-zinc-600 cursor-not-allowed border border-white/5' : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-[0_4px_12px_rgba(79,70,229,0.3)]'}`}
+            >
+              {isFetching ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Import className="w-3.5 h-3.5" />
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* 📥 Import Button Section (Shown below URL only when media list contains files) */}
+        {mediaFiles.length > 0 && (
+          <button
+            onClick={() => !isUploading && inputRef.current?.click()}
+            disabled={isUploading}
+            className={`group flex flex-col items-center justify-center gap-2.5 w-full py-5 rounded-[24px] bg-indigo-600/5 hover:bg-indigo-600/10 border border-dashed border-indigo-500/25 text-indigo-400 font-bold transition-all duration-300 mt-4 ${isUploading ? 'cursor-wait opacity-70 animate-pulse' : 'active:scale-[0.97] hover:shadow-[0_0_30px_rgba(79,70,229,0.1)]'}`}
+          >
+            {isUploading ? (
+              <Loader2 className="w-6 h-6 animate-spin text-indigo-400" />
+            ) : (
+              <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-500" />
+            )}
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-sm font-bold tracking-wide">
+                {isUploading ? 'Importing assets...' : 'Import Files'}
+              </span>
+              <span className="text-[10px] text-zinc-500 font-normal">
+                Supports Video, Audio, Image (Max 50MB)
+              </span>
+            </div>
+          </button>
+        )}
+
         <input ref={inputRef} type="file" multiple accept="video/*,audio/*,image/*" className="hidden" onChange={e => e.target.files && processFiles(e.target.files)} />
       </div>
 
       {/* Media List */}
-      <div className="flex-1 overflow-y-auto px-6 pb-8 space-y-3 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-2.5 custom-scrollbar">
         {mediaFiles.length === 0 ? (
-          <div onClick={() => inputRef.current?.click()} className="flex flex-col items-center justify-center gap-5 cursor-pointer rounded-[32px] border-2 border-dashed border-zinc-800/60 bg-zinc-900/20 hover:bg-zinc-900/40 hover:border-zinc-500/50 transition-all min-h-[220px]">
+          <div
+            onClick={() => !isUploading && inputRef.current?.click()}
+            className={`flex flex-col items-center justify-center gap-5 cursor-pointer rounded-[32px] border-2 border-dashed border-zinc-800/60 bg-zinc-900/20 hover:bg-zinc-900/40 hover:border-zinc-500/50 transition-all min-h-[280px] p-6 ${isUploading ? 'cursor-wait pointer-events-none opacity-60 animate-pulse' : ''}`}
+          >
             <div className="w-20 h-20 rounded-full bg-zinc-800/30 flex items-center justify-center border border-white/5 shadow-inner">
-              <UploadCloud className="w-10 h-10 text-zinc-500" />
+              {isUploading ? (
+                <Loader2 className="w-10 h-10 text-indigo-400 animate-spin" />
+              ) : (
+                <UploadCloud className="w-10 h-10 text-zinc-500" />
+              )}
             </div>
-            <div className="text-center">
-              <p className="text-[15px] font-bold text-zinc-400">Add your media</p>
-              <p className="text-xs text-zinc-600 mt-2">Drag and drop files here to start</p>
+            <div className="text-center space-y-1">
+              <p className="text-[15px] font-bold text-zinc-400">
+                {isUploading ? 'Importing assets...' : 'Add your media'}
+              </p>
+              <p className="text-xs text-zinc-500">
+                {isUploading ? 'Processing files, please wait...' : 'Drag and drop files here to start'}
+              </p>
+              {!isUploading && (
+                <p className="text-[10px] text-zinc-600 font-normal pt-1">
+                  Supports Video, Audio, Image (Max 50MB)
+                </p>
+              )}
             </div>
           </div>
         ) : (

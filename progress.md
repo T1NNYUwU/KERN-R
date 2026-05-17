@@ -1,6 +1,22 @@
-## 🚀 Current Milestone: CapCut Pro UI & Multi-User Security (Completed)
+## 🚀 Current Milestone: CapCut Pro UI, Multi-User Security & Render Engine Fixes (Completed)
 
 ### ✅ Done
+- [x] **V3.3 Spacing, ConfirmModal & Left Side Login & Globe Icon Spacing Precision (100% Completed)**
+  - [x] **Confirm Modal Stacking Context & Blur Fix**: แก้ไขบั๊กความเบลออย่างถาวรใน `ConfirmModal.tsx` โดยการเพิ่ม `position: 'relative'` และ `zIndex: 10` ให้กับหน้าต่างข้อความ และเพิ่ม `zIndex: 1` ให้กับ Overlay ทำให้กล่องยืนยันลอยเด่นชัดอยู่เหนือระดับ Overlay (หมดปัญหาตัวกล่องโดนกลืนหรือเบลอภาพอย่างถาวร 100%) พร้อมทั้งปุ่ม Close กากบาทด้านมุมขวาบนถูกจัดตำแหน่งให้อยู่ตรงมุมกล่องยืนยันอย่างเที่ยงตรง (ไม่ลอยไปอยู่นอกขอบจออีกต่อไป)
+  - [x] **Centered Left Login Brand Panel**: ปรับโครงสร้างหน้า Login ฝั่งซ้ายใน `frontend/app/login/page.tsx` ด้วยการจัดระเบียบ Container หลักให้มีคุณสมบัติ `alignItems: 'center'` และ `justifyContent: 'center'` พร้อมห่อหุ้มเนื้อหาทั้งหมดด้วยกล่อง `width: '100%', maxWidth: 440` เพื่อให้จัดหน้า Brand Panel อยู่กึ่งกลางสมมาตรอย่างสวยหรู ลงตัว ไม่เอียงชิดขอบซ้ายจออย่างสมบูรณ์แบบ 100%
+  - [x] **Globe Icon Overlap Fix**: นำ inline styles `style={{ left: '12px' }}` และ `style={{ paddingLeft: '36px' }}` มาใช้ในช่อง Link Input ของ `MediaBin.tsx` ทำให้ไอคอนรูปโลกเว้นระยะอย่างสวยหรูและไม่มีทางเบียดทับ placeholder ตัวอักษรตัวแรกแน่นอน 100%
+  - [x] โครงสร้าง HTML สำหรับส่วน URL Link Input ปรับแต่งกลับมาเป็นปกติและสมบูรณ์ 100%
+- [x] **V3.2 Media Bin Polish & Icon Bug Fixes**
+  - [x] แก้ไขและจัดระเบียบสัดส่วนพื้นที่ (Padding & Spacing) ของหน้าจอ Media Library ใหม่ทั้งหมด ปรับความกว้างและดึงขอบกล่องด้านซ้ายขวาของ `Header Area` กลับเข้ามาอยู่ในระยะหรูหราปลอดภัยด้วย `px-5` ป้องกันไม่ให้ข้อความและช่องกรอกเบียดล้นชิดขอบจออย่างสมบูรณ์แบบ 100%
+  - [x] แก้ไขปัญหาไอคอนรูปโลก (Globe) ทับซ้อนกับตัวอักษรแรกของ placeholder อย่างถาวร โดยการขยายระยะ padding-left ของช่องกรอกข้อมูลเป็น `pl-11` (44px) และขยับข้อความหัวข้อ `Import from URL` ด้วย `pl-1` ทำให้ทุกอย่างเว้นระยะอย่างประณีตและสวยงาม
+  - [x] ปรับความสูงของช่อง URL Input และปุ่ม Import ด้านหลังให้เตี้ยลงและกระชับมีมิติยิ่งขึ้น ปรับจากความสูง `h-14` (56px) ลงมาอยู่ที่ **`h-11` (44px)** พร้อมดีไซน์ขอบโค้งมนสวยหรู `rounded-2xl` และเปลี่ยนปุ่ม Import เป็นปุ่มไอคอนจัตุรัสทรงเสน่ห์ประหยัดพื้นที่
+- [x] **V3.2 Render Engine & Media Bin Polish**
+  - [x] แก้ไขปัญหาวิดีโอแนวตั้ง (9:16) หรือคลิปสัดส่วนอื่นโดนบีบครอปขอบล่าง/ขอบบน (เช่น ลายน้ำ `@RankGoBig` หาย) เมื่อส่งออก โดยการปรับฟิลเตอร์ FFmpeg ให้ทำการสเกลแบบ 'contain' เข้าสู่เฟรม 1920x1080 และจัดกึ่งกลางอัตโนมัติ 100%
+  - [x] แก้ไขปัญหาขนาดตัวหนังสือเล็กเกินไปหรือไม่เท่ากับในหน้าจอ Preview โดยการคำนวณสเกล `fontSize` อ้างอิงจากขนาดความสูงแคนวาสพรีวิวจริงในหน้าเว็บ (ตัวหาร 360px แทน 480px) ทำให้ขนาดและตำแหน่งตรงกับที่ตาเห็นในบราวเซอร์ 100%
+  - [x] ปรับเปลี่ยนโครงสร้างหน้าจอ Media Library ใหม่หมดจดตามแบบสเก็ตช์ลายมือของผู้ใช้ (นำแท็บ Upload/Link ออก, ลบตัวแปร activeTab unused state, วางช่อง URL Input และกล่อง Add your media ไว้ในแผงหน้าจอเดียวแบบบูรณาการ 100% ป้องกันความซ้ำซ้อน)
+  - [x] ปรับความสูงของปุ่ม Import Files ให้เด่นชัดและมีดีไซน์แบนราบแบบโมเดิร์น (Sleek Flat Box) สไตล์ CapCut Pro
+  - [x] เพิ่มระบบจำกัดขนาดไฟล์นำเข้าสูงสุดไม่เกิน 50MB เพื่อความรวดเร็วและปลอดภัยในการประมวลผล พร้อมระบบแจ้งเตือนภาษาไทยแบบเรียลไทม์
+  - [x] พัฒนาระบบแสดงสถานะการนำเข้าไฟล์ด้วย Spinner หมุนๆ (isUploading) และเอฟเฟกต์ pulse เมื่อไฟล์กำลังประมวลผลและส่งไปอัปโหลด 100%
 - [x] **V3.1 Refinement: Depth, Spacing & Next.js 16 Production Ready**
   - [x] Redesign **Confirm Modal** (CapCut Pro style with stacked buttons & depth)
   - [x] Refactor **Media Library** (Improved spacing, segmented controls, card depth)
@@ -13,7 +29,7 @@
   - [x] **GitHub Actions CI/CD Pipeline**: พัฒนา `ci.yml` และจัดการเคลียร์ปัญหา ESLint Strict TypeScript Linter Errors ทั้ง 20 ข้อสำเร็จลุล่วง (เช่น Rules of Hooks ใน Inspector, Let to Const, Unused Variables และ Unsafe Any Member Access บน NestJS Engine) ทำให้ CI ของทั้งคู่เปลี่ยนเป็นสีเขียว (Passed) 100%!
   - [x] **Keep-Alive Cron Job**: สร้างระบบมอนิเตอร์และปลุกหลังบ้านอัตโนมัติทุก 15 นาทีผ่าน GitHub Actions (`keep-alive.yml`) แก้ปัญหา Cold Start ได้ 100%
   - [x] **Custom Domain Config**: ตั้งค่าโดเมนหลัก `kerntemplate.online` สำเร็จ จัดการ Redirect และปรับปรุง URL Helper ป้องกัน Double-Slash CORS และ 404 บั๊กได้ 100%
-  - [x] **Smart Encoder Fallback**: แก้ไขปัญหาการส่งออกวิดีโอล้มเหลวบน Railway (`Cannot load libcuda.so.1`) โดยการเพิ่มระบบ Auto-Fallback ไปใช้ CPU-based encoder (`libx264`) ทนทานต่อความพัง ทำงานสำเร็จ 100%!
+  - [x] **Smart Encoder Fallback & Engine Fixes**: แก้ไขปัญหาการส่งออกวิดีโอล้มเหลวบน Railway (`Cannot load libcuda.so.1`) โดยการเพิ่มระบบ Auto-Fallback ไปใช้ CPU-based encoder (`libx264`) ทนทานต่อความพัง ทำงานสำเร็จ 100%!
 - [x] **V3.0 UI/UX Overhaul (CapCut-Inspired)**
   - [x] **Toolbar**: Pill-shaped tool containers, central playback controls, and persistent magnetic toggle.
   - [x] **Spacing & Depth**: Optimized panel padding (16px-24px), nested shadows, and high-contrast borders to avoid "flat" look.

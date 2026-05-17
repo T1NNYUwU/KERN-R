@@ -126,7 +126,9 @@ export class TimelineProcessor {
             this.getKFExpr(clip.keyframes, 'opacity', clip.opacity ?? 100, 0) +
             '/100';
 
-          let vfilters = `trim=start=${trimStart}:duration=${clip.duration},setpts=PTS-STARTPTS,scale=w=iw*${scaleExpr}:h=-1:flags=fast_bilinear`;
+          // 1. Scale with 'contain' aspect ratio first (fitting into 1920x1080 frame)
+          // 2. Then apply user dynamic Zoom scaleX/scaleY (scaleExpr)
+          let vfilters = `trim=start=${trimStart}:duration=${clip.duration},setpts=PTS-STARTPTS,scale='if(gte(iw/ih,1920/1080),1920,-1)':'if(gte(iw/ih,1920/1080),-1,1080)':flags=fast_bilinear,scale=w=iw*${scaleExpr}:h=ih*${scaleExpr}:flags=fast_bilinear`;
 
           if (
             clip.opacity !== 100 ||
@@ -176,7 +178,7 @@ export class TimelineProcessor {
         const escapedText = (clip.text || '')
           .replace(/'/g, "'\\\\\\''")
           .replace(/:/g, '\\:');
-        const fontSize = Math.round((clip.textSize || 32) * (1080 / 480)); // Map UI size to 1080p
+        const fontSize = Math.round((clip.textSize || 32) * (1080 / 360)); // Map UI size to 1080p (UI canvas is approx 360px high)
         const color = (clip.textColor || '#ffffff').replace('#', '0x');
 
         // Text Position mapping (UI uses textX/textY as 0-100% for center)
