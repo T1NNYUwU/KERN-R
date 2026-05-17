@@ -35,9 +35,16 @@ KERN-R Studio — สุดยอดโปรแกรมตัดต่อว�
    - 🔍 Timeline Zoom: ขยายดูรายละเอียดได้ตั้งแต่ 15% - 400%
    - 🔉 Separate Audio: แยกเสียงออกจากวิดีโอได้ในคลิกเดียว (Right Click -> Separate Audio)
 
-5. ระบบ Automation & CI/CD Pipeline:
+5. ฟีเจอร์ AI & ระบบประมวลผลอัจฉริยะ (Advanced AI & Intelligent Media Engine):
+   - 🎙️ AI Voiceover (Text-to-Speech): ระบบแปลงข้อความเป็นเสียงพากย์ด้วย AI ในคลิกเดียว รองรับหลากหลาย Speech Engines ชั้นนำระดับโลก เช่น Edge TTS (มาพร้อมเสียงพากย์ภาษาไทย NiwatNeural คุณภาพสูงและสมจริงเป็นธรรมชาติตัวตั้งต้น), Kokoro TTS, Piper ONNX, Google Translate API, และ OpenAI API (`tts-1`)
+   - ⚡ AI Smart Cut (Silence Remover): ระบบวิเคราะห์และลบช่วงเงียบหรือไม่มีเสียงพูดในวิดีโอแบบอัจฉริยะ เพื่อตัดต่อให้ได้จังหวะวิดีโอสไตล์ Fast-paced คอนเทนต์ยุคใหม่
+   - 📊 Automated Ranking Template: ฟังก์ชันสร้างสรรค์วิดีโอจัดอันดับ (Top 10 / Ranking) อัตโนมัติ พร้อมการทำ Transition แสงแฟลช (Flash Transition) ช่วงเปลี่ยนอันดับ และระบบใส่เสียงกลองรัว (Drum Roll) และเสียงวื้บ (Whoosh SFX) อัตโนมัติตามอันดับคลิป
+   - 🔤 Smart Captions & Subtitles Engine: สร้างไฟล์คำบรรยายพรีเมียม (.ass) อัตโนมัติจากบทพากย์ AI พร้อมใส่เอฟเฟกต์ Fade In/Out และแอนิเมชันเครื่องพิมพ์ดีด (Typewriter Effect) สำหรับฟอนต์ไทยยอดนิยมอย่าง Kanit
+   - 🔊 Audio Mixer & Volume Control: ระบบผสมผสานเสียงพากย์ AI, เสียงคลิปต้นฉบับ, ซาวด์เอฟเฟกต์ (SFX) และเพลงประกอบหลังบ้าน (Global Background Music) เข้าด้วยกันอย่างสมดุล พร้อมคุมความดังเบา (Volume) แยกแชนเนล
+
+6. ระบบ Automation & CI/CD Pipeline:
    - 🚀 GitHub Actions Integrated: ตรวจจับการเปลี่ยนแปลงของโค้ดเมื่อ Push/Pull Request เข้ากิ่งหลัก (main)
    - 🧪 Dual Service CI Testing: แยกทดสอบกระบวนการบิลด์และการทดสอบของ Frontend (Next.js 16) และ Backend (NestJS) โดยอัตโนมัติ มั่นใจ 100% ว่าไม่มีการคอมไพล์โค้ดพังก่อนขึ้นระบบจริง
    - ⏰ Multi-Option Keep-Alive Cron Job: ระบบตั้งเวลาปลุกเซิร์ฟเวอร์หลังบ้านอัตโนมัติทุก 15 นาที เพื่อแก้ไขปัญหา Cold Start และตรวจสุขภาพของ API Render Server อยู่เสมอ (รองรับทั้งผ่าน GitHub Actions keep-alive.yml หรือเชื่อมต่อไปยังบริการภายนอกอย่าง cron-job.org โดยตรง)
 
-สถานะ: V3.3 Production Ready - สมบูรณ์แบบด้วย Inline Styles ในส่วนสำคัญ ป้องกันการทับซ้อนและจัด Spacing หรูหราแน่นอน 100%
+สถานะ: V3.3 Production Ready - ฟีเจอร์ AI และสถาปัตยกรรมตัดต่อวิดีโอเสร็จสมบูรณ์ 100% พร้อมด้วย Spacing และ UI สุดหรูหราคมชัดปราศจากการซ้อนทับ
