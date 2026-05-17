@@ -247,7 +247,22 @@ export class TimelineProcessor {
         await execAsync(ffmpegCmd);
       } catch (renderErr) {
         console.error('[Timeline] FFmpeg Render Command failed!', renderErr);
-        throw renderErr;
+        
+        if (encoder !== 'libx264') {
+          console.warn('[Timeline] Hardware encoder failed. Attempting smart fallback to CPU (libx264)...');
+          const fallbackEncoder = 'libx264';
+          const fallbackCmd = `ffmpeg -y -threads 0 ${inputArgs.join(' ')} -filter_complex "${filterComplex}" -sws_flags fast_bilinear -map "[${lastVideoLabel}]" -map "[aout]" -c:v ${fallbackEncoder} -preset ultrafast -crf 23 -pix_fmt yuv420p "${finalPath}"`;
+          console.log('[Timeline] Command (Fallback):', fallbackCmd);
+          try {
+            await execAsync(fallbackCmd);
+            console.log('[Timeline] Fallback render with libx264 completed successfully!');
+          } catch (fallbackErr) {
+            console.error('[Timeline] Fallback render with libx264 also failed!', fallbackErr);
+            throw fallbackErr;
+          }
+        } else {
+          throw renderErr;
+        }
       }
 
       await this.supabaseService.updateJobStatus(id, 'PROCESSING', 90);

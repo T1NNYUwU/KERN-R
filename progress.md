@@ -13,6 +13,7 @@
   - [x] **GitHub Actions CI/CD Pipeline**: พัฒนา `ci.yml` และจัดการเคลียร์ปัญหา ESLint Strict TypeScript Linter Errors ทั้ง 20 ข้อสำเร็จลุล่วง (เช่น Rules of Hooks ใน Inspector, Let to Const, Unused Variables และ Unsafe Any Member Access บน NestJS Engine) ทำให้ CI ของทั้งคู่เปลี่ยนเป็นสีเขียว (Passed) 100%!
   - [x] **Keep-Alive Cron Job**: สร้างระบบมอนิเตอร์และปลุกหลังบ้านอัตโนมัติทุก 15 นาทีผ่าน GitHub Actions (`keep-alive.yml`) แก้ปัญหา Cold Start ได้ 100%
   - [x] **Custom Domain Config**: ตั้งค่าโดเมนหลัก `kerntemplate.online` สำเร็จ จัดการ Redirect และปรับปรุง URL Helper ป้องกัน Double-Slash CORS และ 404 บั๊กได้ 100%
+  - [x] **Smart Encoder Fallback**: แก้ไขปัญหาการส่งออกวิดีโอล้มเหลวบน Railway (`Cannot load libcuda.so.1`) โดยการเพิ่มระบบ Auto-Fallback ไปใช้ CPU-based encoder (`libx264`) ทนทานต่อความพัง ทำงานสำเร็จ 100%!
 - [x] **V3.0 UI/UX Overhaul (CapCut-Inspired)**
   - [x] **Toolbar**: Pill-shaped tool containers, central playback controls, and persistent magnetic toggle.
   - [x] **Spacing & Depth**: Optimized panel padding (16px-24px), nested shadows, and high-contrast borders to avoid "flat" look.
