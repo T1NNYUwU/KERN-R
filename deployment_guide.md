@@ -51,10 +51,29 @@ services:
 ```
 3. รันคำสั่ง `docker-compose up -d --build`
 
-## 4. 📝 Post-Deployment Checklist
-- [ ] ทดสอบการ Upload ไฟล์สื่อ (Media Library)
-- [ ] ทดสอบการกด Export วิดีโอ (Backend Rendering)
-- [ ] ตรวจสอบว่า Status Badge บน Header แสดงผลเป็นสีเขียว (Backend Online)
-
----
-สถานะ: V3.1 Production Ready - คู่มือนี้พร้อมสำหรับการ Deploy ทันทีครับ!
+54: ## 4. 📝 Post-Deployment Checklist
+55: - [ ] ทดสอบการ Upload ไฟล์สื่อ (Media Library)
+56: - [ ] ทดสอบการกด Export วิดีโอ (Backend Rendering)
+57: - [ ] ตรวจสอบว่า Status Badge บน Header แสดงผลเป็นสีเขียว (Backend Online)
+58: 
+59: ## 5. ⏰ Keep-Alive & Active Monitoring (ป้องกันเซิร์ฟเวอร์หลับลึก)
+60: เพื่อป้องกันไม่ให้เซิร์ฟเวอร์ประมวลผลวิดีโอ (Backend) เข้าสู่โหมดสลีป (Cold Start) และเพื่อตรวจสอบความพร้อมใช้งานตลอด 24 ชั่วโมง โปรเจกต์ KERN-R ใช้สถาปัตยกรรมมอนิเตอร์แบบคู่ขนาน (Dual-Active Monitoring System):
+61: 
+62: ### 🔵 Option A: GitHub Actions Keep-Alive Cron (พร้อมรันอัตโนมัติ)
+63: - ระบบจะตั้งเวลารันอัตโนมัติผ่านไฟล์ `.github/workflows/keep-alive.yml` ทุกๆ 15 นาที เพื่อส่งสัญญานไปกระตุ้น API สุขภาพ (`/api/videos/health`) บน Cloud
+64: - สามารถกดรันและปลุกเซิร์ฟเวอร์ด้วยตัวเองผ่านหน้าแท็บ **Actions** บน GitHub ได้ตลอดเวลา
+65: 
+66: ### 🟢 Option B: Cron-Job.org (แนะนำอย่างยิ่งเพื่อความเสถียรสูงสุด)
+67: แนะนำให้ตั้งค่าระบบภายนอกร่วมด้วยเพื่อความตรงเวลาและเช็คได้ถี่กว่า (ทุกๆ 5 นาที):
+68: 1. เข้าไปที่ [console.cron-job.org](https://console.cron-job.org/) และสมัครสมาชิกฟรี
+69: 2. คลิกปุ่ม **Create Cronjob**
+70: 3. ตั้งค่าพารามิเตอร์ดังนี้:
+71:    - **Title:** `KERN-R Backend Keep-Alive`
+72:    - **URL:** `https://kern-r-production.up.railway.app/api/videos/health` (หรือ URL ของหลังบ้านคุณ)
+73:    - **Request Method:** `GET`
+74:    - **Schedule:** เลือก `Every 5 minutes` เพื่อการกระตุ้นที่ได้ผลดีที่สุด
+75: 4. คลิก **Create** เพื่อเปิดใช้ระบบมอนิเตอร์ประสิทธิภาพสูง
+76: 
+77: ---
+78: สถานะ: V3.1 Production Ready - คู่มือนี้พร้อมสำหรับการ Deploy ทันทีครับ!
+79:

@@ -31,4 +31,9 @@ KERN-R Studio — สุดยอดโปรแกรมตัดต่อว�
    - 🔍 Timeline Zoom: ขยายดูรายละเอียดได้ตั้งแต่ 15% - 400%
    - 🔉 Separate Audio: แยกเสียงออกจากวิดีโอได้ในคลิกเดียว (Right Click -> Separate Audio)
 
+5. ระบบ Automation & CI/CD Pipeline:
+   - 🚀 GitHub Actions Integrated: ตรวจจับการเปลี่ยนแปลงของโค้ดเมื่อ Push/Pull Request เข้ากิ่งหลัก (main)
+   - 🧪 Dual Service CI Testing: แยกทดสอบกระบวนการบิลด์และการทดสอบของ Frontend (Next.js 16) และ Backend (NestJS) โดยอัตโนมัติ มั่นใจ 100% ว่าไม่มีการคอมไพล์โค้ดพังก่อนขึ้นระบบจริง
+   - ⏰ Multi-Option Keep-Alive Cron Job: ระบบตั้งเวลาปลุกเซิร์ฟเวอร์หลังบ้านอัตโนมัติทุก 15 นาที เพื่อแก้ไขปัญหา Cold Start และตรวจสุขภาพของ API Render Server อยู่เสมอ (รองรับทั้งผ่าน GitHub Actions keep-alive.yml หรือเชื่อมต่อไปยังบริการภายนอกอย่าง cron-job.org โดยตรง)
+
 สถานะ: V3.1 Production Ready - มุ่งเน้นความสวยงาม มิติของดีไซน์ และความเสถียรในการใช้งาน

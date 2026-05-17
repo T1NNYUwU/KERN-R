@@ -1,0 +1,44 @@
+name: KERN-R Backend Monitor & Keep-Alive
+
+on:
+  schedule:
+    # รันทุกๆ 15 นาที เพื่อปลุกหลังบ้าน (Keep Alive) และตรวจสุขภาพเซิร์ฟเวอร์
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # ช่วยให้สามารถกดปุ่มคลิก "Run workflow" เพื่อสั่งปลุกเซิร์ฟเวอร์ด้วยมือได้จากหน้า GitHub Actions
+
+jobs:
+  monitor-and-wake:
+    name: Ping & Monitor Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Wake up & Check Health Status
+        run: |
+          BACKEND_URL="https://kern-r-production.up.railway.app/api/videos/health"
+          echo "🚀 Initiating ping to KERN-R Backend at: $BACKEND_URL"
+          
+          # ส่ง request ไปหา backend และบันทึกสถานะ HTTP Response Code
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$BACKEND_URL")
+          
+          echo "📊 Response Status Code received: $HTTP_STATUS"
+          
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ SUCCESS: KERN-R Backend is ONLINE, active, and fully operational!"
+          elif [ "$HTTP_STATUS" -eq 000 ] || [ "$HTTP_STATUS" -ge 500 ]; then
+            echo "⚠️ WARNING: Backend is in deep sleep or failed (Code: $HTTP_STATUS). Retrying to wake it up..."
+            
+            # รอรันซ้ำ 5 วินาทีเพื่อความชัวร์และบังคับส่ง Request ปลุกอีกรอบ
+            sleep 5
+            RETRY_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$BACKEND_URL")
+            echo "📊 Retry Response Status Code: $RETRY_STATUS"
+            
+            if [ "$RETRY_STATUS" -eq 200 ]; then
+              echo "✅ SUCCESS: Backend successfully woke up on retry!"
+            else
+              echo "❌ ERROR: Backend server failed to respond properly (Status Code: $RETRY_STATUS)."
+              exit 1
+            fi
+          else
+            echo "❌ ERROR: Unexpected status code: $HTTP_STATUS. Service might be experiencing issues."
+            exit 1
+          fi
