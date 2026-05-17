@@ -8,7 +8,7 @@ KERN-R Studio — สุดยอดโปรแกรมตัดต่อว�
    - 🔄 History Engine: ระบบ Undo/Redo สูงสุด 50 ขั้นตอน สำหรับทุก Action
    - 🔒 Multi-user Security: แยกข้อมูล (Projects/Media) ของแต่ละ User โดยสมบูรณ์ด้วย Supabase & IndexedDB
    - 🌐 Next.js 16 & Vercel Production Ready: เปลี่ยนมาใช้ Next.js 16 Middleware (getAll/setAll) ที่เสถียร 100% บน Edge Runtime และทำงานร่วมกับ Railway Backend ในรูปแบบ Multi-service Production Deployed
-   - 🔗 Custom Domain Integrated: สถาปัตยกรรมรองรับการเชื่อมต่อกับ Custom Domain (kerntemplate.online) ผ่านระบบ DNS, Supabase OAuth Callback และ Railway CORS Origin อย่างสมบูรณ์แบบ
+   - 🔗 Custom Domain Integrated: สถาปัตยกรรมรองรับการเชื่อมต่อกับ Custom Domainหลัก (`https://kerntemplate.online`) ผ่านระบบ DNS, Vercel Redirect, Supabase OAuth Callback และ Railway CORS Origin อย่างสมบูรณ์แบบ พร้อมระบบ URL Endpoint Helper ป้องกันปัญหา Double-Slash (`//`) และ 404 บั๊กบนโปรดักชัน 100%
 
 2. Interface & UX (CapCut Pro Inspired):
    - 🌑 Dark Slate Aesthetics: ธีมมืดระดับมืออาชีพ พร้อมความลึก (Depth) และมิติ (Shadows)

@@ -1,15 +1,17 @@
 // Shared types for Video Ranking Studio
 
 export const getBackendUrl = () => {
+  let backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005';
+
   if (typeof window !== 'undefined') {
-    // Force backend port 3005 in local development, ignoring any stale .env.local
-    if (window.location.port === '3000' || window.location.port === '3001') {
+    // Force backend port 3005 in local development
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return 'http://localhost:3005';
     }
-    return window.location.origin;
   }
-  // Server-side rendering fallback
-  return process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005';
+
+  // Auto trim trailing slash to prevent double slash errors (e.g. //api/videos/health)
+  return backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl;
 };
 
 export interface SubTitleItem {

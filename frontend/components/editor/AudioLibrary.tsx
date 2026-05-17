@@ -4,6 +4,7 @@ import { useEditorStore, makeClipId, MediaFile, Clip } from '../../lib/store'
 import { Music, Play, Plus, Loader2, Sparkles, MessageSquare } from 'lucide-react'
 
 import { useAuth } from '../../contexts/AuthContext'
+import { getBackendUrl } from '../../lib/types'
 
 const VOICES = [
   { id: 'th-TH-NiwatNeural', name: 'Niwat (TH)', gender: 'Male' },
@@ -23,7 +24,7 @@ export default function AudioLibrary() {
     if (!text.trim() || !user) return
     setIsGenerating(true)
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
+      const backendUrl = getBackendUrl()
       const res = await fetch(`${backendUrl}/api/videos/preview-voice`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

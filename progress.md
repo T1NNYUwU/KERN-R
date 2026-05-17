@@ -12,6 +12,7 @@
   - [x] Deploy Frontend (Vercel) เคลียร์บิลด์เก่า สำเร็จและแสดงหน้าจอ UI 100%
   - [x] **GitHub Actions CI/CD Pipeline**: พัฒนา `ci.yml` ทดสอบกระบวนการติดตั้งและทดสอบ (Build & Unit Test) ของ Frontend และ Backend ได้ผลลัพธ์เป็นสีเขียว (Passed) 100%
   - [x] **Keep-Alive Cron Job**: สร้างระบบมอนิเตอร์และปลุกหลังบ้านอัตโนมัติทุก 15 นาทีผ่าน GitHub Actions (`keep-alive.yml`) แก้ปัญหา Cold Start ได้ 100%
+  - [x] **Custom Domain Config**: ตั้งค่าโดเมนหลัก `kerntemplate.online` สำเร็จ จัดการ Redirect และปรับปรุง URL Helper ป้องกัน Double-Slash CORS และ 404 บั๊กได้ 100%
 - [x] **V3.0 UI/UX Overhaul (CapCut-Inspired)**
   - [x] **Toolbar**: Pill-shaped tool containers, central playback controls, and persistent magnetic toggle.
   - [x] **Spacing & Depth**: Optimized panel padding (16px-24px), nested shadows, and high-contrast borders to avoid "flat" look.
@@ -20,10 +21,9 @@
 - [x] **Real-time Health Check**: ระบบเช็คสถานะเซิร์ฟเวอร์แบบอัตโนมัติ
 
 ### 🚧 In Progress
-- [ ] **Custom Domain Config**: ตั้งค่าโดเมน `kerntemplate.online` (Hostinger) เชื่อมต่อ Vercel, Supabase และตั้งค่า Railway Backend CORS (กำลังเปลี่ยนค่า CORS_ORIGIN บนเซิร์ฟเวอร์ และปรับโค้ดหลังบ้านให้รองรับความปลอดภัยระดับ Pro)
-22: - [ ] **Cloud Storage Sync**: ระบบอัปโหลดและจัดการสื่อบน Cloud (Supabase Storage)
-23: - [ ] **Advanced Transitions**: เพิ่มเอฟเฟกต์การเปลี่ยนผ่านวิดีโอที่ซับซ้อนขึ้น
-24: - [ ] **Mobile Layout Optimization**: ปรับแต่งหน้าจอให้รองรับการใช้งานบนมือถืออย่างสมบูรณ์
+- [ ] **Cloud Storage Sync**: ระบบอัปโหลดและจัดการสื่อบน Cloud (Supabase Storage)
+- [ ] **Advanced Transitions**: เพิ่มเอฟเฟกต์การเปลี่ยนผ่านวิดีโอที่ซับซ้อนขึ้น
+- [ ] **Mobile Layout Optimization**: ปรับแต่งหน้าจอให้รองรับการใช้งานบนมือถืออย่างสมบูรณ์
 
 ## ✅ Phase 12: Sequence Mode (เสร็จสิ้น)
 - [x] SequenceProcessor (Backend engine สำหรับต่อคลิป)

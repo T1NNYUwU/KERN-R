@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { toast } from 'sonner'
+import { getBackendUrl } from '../../lib/types'
 
 const FONT_FAMILIES = [
   'Inter', 'System', 'Roboto', 'Kanit', 'Prompt', 'Sarabun',
@@ -231,7 +232,7 @@ export default function Inspector() {
                         setIsGeneratingTTS(true)
                         try {
                           const engine = (window as any).ttsEngine || 'edge'
-                          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:3005'
+                          const backendUrl = getBackendUrl()
                           const res = await fetch(`${backendUrl}/api/videos/tts`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },

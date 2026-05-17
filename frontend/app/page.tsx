@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import ConfirmModal from '../components/ui/ConfirmModal'
+import { getBackendUrl } from '../lib/types'
 
 const MediaBin          = dynamic(() => import('../components/editor/MediaBin'),          { ssr: false })
 const VideoPreview      = dynamic(() => import('../components/editor/VideoPreview'),      { ssr: false })
@@ -55,7 +56,7 @@ export default function EditorPage() {
     if (user?.id) initStore(user.id)
     const ping = async () => {
       try {
-        const r = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://127.0.0.1:3005'}/api/videos/health`,
+        const r = await fetch(`${getBackendUrl()}/api/videos/health`,
           { signal: AbortSignal.timeout(3000) })
         setIsBackendHealthy(r.ok)
       } catch { setIsBackendHealthy(false) }
@@ -75,7 +76,7 @@ export default function EditorPage() {
   const handleExport = async () => {
     try {
       setIsExporting(true); setExportProgress(0)
-      const base = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://127.0.0.1:3005'
+      const base = getBackendUrl()
       const { clips, mediaFiles } = useEditorStore.getState()
       const res = await fetch(`${base}/api/videos/render`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },

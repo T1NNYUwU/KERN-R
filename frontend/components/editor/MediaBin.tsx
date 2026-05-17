@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '../../contexts/AuthContext'
+import { getBackendUrl } from '../../lib/types'
 
 function fmtDur(s: number) {
   const m = Math.floor(s / 60)
@@ -78,7 +79,7 @@ export default function MediaBin() {
       try {
         const formData = new FormData()
         formData.append('file', file)
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
+        const backendUrl = getBackendUrl()
         const res = await fetch(`${backendUrl}/api/videos/upload`, { method: 'POST', body: formData })
         const data = await res.json()
         
@@ -98,7 +99,7 @@ export default function MediaBin() {
     if (!urlInput.trim() || !user) return
     setIsFetching(true)
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
+      const backendUrl = getBackendUrl()
       const res = await fetch(`${backendUrl}/api/videos/preview?url=${encodeURIComponent(urlInput)}`)
       const data = await res.json()
       
@@ -129,7 +130,7 @@ export default function MediaBin() {
     if (!confirm('Are you sure you want to clean up server garbage?')) return
     setIsCleaning(true)
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005'
+      const backendUrl = getBackendUrl()
       const res = await fetch(`${backendUrl}/api/videos/cleanup`, { method: 'POST' })
       const data = await res.json()
       if (data.success) toast.success(`Cleanup successful! Deleted ${data.deletedCount} files.`)
