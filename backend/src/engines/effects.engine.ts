@@ -1,16 +1,26 @@
 import * as fs from 'fs';
-import * as path from 'path';
+
+interface TimelineItem {
+  type: string;
+  content?: string;
+  x?: number;
+  y?: number;
+  startTime: number;
+  duration: number;
+  animation?: string;
+  scale?: number;
+}
 
 export class EffectsEngine {
   /**
    * Generates FFmpeg filter segments for SFX and Overlays
    */
   static buildFilter(
-    timelineItems: any[],
+    timelineItems: TimelineItem[],
     baseVideoTag: string,
     baseAudioTag: string,
     inputOffset: number,
-    tempDir: string,
+    _tempDir: string,
   ): {
     filter: string;
     inputArgs: string;

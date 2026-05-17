@@ -139,8 +139,8 @@ export default function MediaBin() {
   }
 
   const handleAddToTimeline = useCallback((media: MediaFile) => {
-    let targetTrack = tracks.find(t => t.type === media.type) ?? tracks.find(t => media.type === 'image' && t.type === 'video')
-    let trackId: string = targetTrack?.id || addTrack(media.type === 'image' ? 'video' : media.type)
+    const targetTrack = tracks.find(t => t.type === media.type) ?? tracks.find(t => media.type === 'image' && t.type === 'video')
+    const trackId: string = targetTrack?.id || addTrack(media.type === 'image' ? 'video' : media.type)
     const trackClips = clips.filter(c => c.trackId === trackId)
     const nextStart = trackClips.length === 0 ? 0 : Math.max(...trackClips.map(c => c.startTime + c.duration))
     addClip({

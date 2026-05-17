@@ -1,8 +1,9 @@
 'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react'
 import { useEditorStore } from '../../lib/store'
 import { 
-  Move, RotateCcw, Type, AlignLeft, Palette, Image as ImageIcon,
+  Move, RotateCcw,
   Scissors, Zap, Loader2, Diamond
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -17,7 +18,7 @@ const FONT_FAMILIES = [
 
 function SliderRow({ 
   label, value, min, max, step = 1, unit = '', 
-  onChange, color = 'indigo'
+  onChange
 }: {
   label: string
   value: number
@@ -54,8 +55,9 @@ function SliderRow({
 export default function Inspector() {
   const { user } = useAuth()
   const clip = useEditorStore(s => s.clips.find(c => c.id === s.selectedClipId))
-  const { updateClip, splitClip, removeClip, clips, addMedia, addClip, addTrack, tracks } = useEditorStore()
+  const { updateClip, removeClip, clips, addMedia, addClip, addTrack, tracks } = useEditorStore()
   const mediaFiles = useEditorStore(s => s.mediaFiles)
+  const currentTime = useEditorStore(s => s.currentTime)
   const [isProcessing, setIsProcessing] = useState(false)
   const [mainTab, setMainTab] = useState('Text')
   const [subTab, setSubTab] = useState('Basic')
@@ -75,7 +77,6 @@ export default function Inspector() {
   }
 
   const u = (updates: Parameters<typeof updateClip>[1]) => updateClip(clip.id, updates)
-  const currentTime = useEditorStore(s => s.currentTime)
 
   const toggleKeyframe = (prop: string) => {
     const localTime = currentTime - clip.startTime

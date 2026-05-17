@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useEditorStore, makeClipId, MediaFile, Clip } from '../../lib/store'
-import { Music, Play, Plus, Loader2, Sparkles, MessageSquare } from 'lucide-react'
+import { Music, Loader2, Sparkles, MessageSquare } from 'lucide-react'
 
 import { useAuth } from '../../contexts/AuthContext'
 import { getBackendUrl } from '../../lib/types'
@@ -61,8 +61,8 @@ export default function AudioLibrary() {
         await addMedia(media, user.id)
         
         // Auto-add to timeline
-        let track = tracks.find(t => t.type === 'audio')
-        let trackId = track?.id || addTrack('audio')
+        const track = tracks.find(t => t.type === 'audio')
+        const trackId = track?.id || addTrack('audio')
         
         const trackClips = clips.filter(c => c.trackId === trackId)
         const nextStart = trackClips.length === 0 ? 0 : Math.max(...trackClips.map(c => c.startTime + c.duration))

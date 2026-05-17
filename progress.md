@@ -10,7 +10,7 @@
 - [x] **Vercel & Railway Multi-service Production Deployed & CI/CD**
   - [x] Deploy Backend (Railway: `kern-r-production.up.railway.app`) ทำงานเสร็จสมบูรณ์
   - [x] Deploy Frontend (Vercel) เคลียร์บิลด์เก่า สำเร็จและแสดงหน้าจอ UI 100%
-  - [x] **GitHub Actions CI/CD Pipeline**: พัฒนา `ci.yml` ทดสอบกระบวนการติดตั้งและทดสอบ (Build & Unit Test) ของ Frontend และ Backend ได้ผลลัพธ์เป็นสีเขียว (Passed) 100%
+  - [x] **GitHub Actions CI/CD Pipeline**: พัฒนา `ci.yml` และจัดการเคลียร์ปัญหา ESLint Strict TypeScript Linter Errors ทั้ง 20 ข้อสำเร็จลุล่วง (เช่น Rules of Hooks ใน Inspector, Let to Const, Unused Variables และ Unsafe Any Member Access บน NestJS Engine) ทำให้ CI ของทั้งคู่เปลี่ยนเป็นสีเขียว (Passed) 100%!
   - [x] **Keep-Alive Cron Job**: สร้างระบบมอนิเตอร์และปลุกหลังบ้านอัตโนมัติทุก 15 นาทีผ่าน GitHub Actions (`keep-alive.yml`) แก้ปัญหา Cold Start ได้ 100%
   - [x] **Custom Domain Config**: ตั้งค่าโดเมนหลัก `kerntemplate.online` สำเร็จ จัดการ Redirect และปรับปรุง URL Helper ป้องกัน Double-Slash CORS และ 404 บั๊กได้ 100%
 - [x] **V3.0 UI/UX Overhaul (CapCut-Inspired)**
