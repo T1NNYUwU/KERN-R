@@ -1,50 +1,69 @@
-KERN-R Studio — สุดยอดโปรแกรมตัดต่อวิดีโอ AI ครบวงจร
+KERN-R Studio 3.3 — โปรแกรมตัดต่อวิดีโอ AI ครบวงจร
 
-ความสามารถปัจจุบัน (V3.3 - CapCut Pro Unified Edition):
+1. ระบบสถาปัตยกรรมและความปลอดภัย (Core & Security)
+🗄️ คลังสื่อเก็บในเครื่องผู้ใช้ (Local Storage & IndexedDB)
+จัดเก็บไฟล์ใน IndexedDB ของเบราว์เซอร์แยกรายบัญชี ข้อมูลปลอดภัยไม่หายแม้ปิดหน้าเว็บหรือรีเฟรช
+💾 บันทึกโครงงานอัตโนมัติ (Auto-save System)
+บันทึกสถานะไทม์ไลน์ แทร็ก และ Playhead ลง LocalStorage อัตโนมัติทุกความเปลี่ยนแปลงป้องกันงานหาย
+🔄 ย้อนกลับและทำซ้ำ (Undo / Redo 50 Steps)
+ระบบสลับย้อนกลับและทำซ้ำการแก้ไขบนไทม์ไลน์ได้สูงสุด 50 ขั้นตอน โดยไม่หน่วงหน่วยความจำ
+🔒 ข้อมูลแยกขาดความปลอดภัยสูง (Multi-user Supabase RLS)
+ควบคุมข้อมูลโปรเจกต์ด้วยนโยบาย RLS ของ Supabase บัญชีอื่นไม่มีสิทธิ์เข้าถึงหรือมองเห็นโครงการของคุณ
+🌐 โดเมนหลักและระบบเชื่อมต่อเสถียร (Custom Domain & API Safety)
+รันบนโดเมนหลัก https://kerntemplate.online พร้อมติดตั้งระบบ URL Helper ป้องกันบั๊ก CORS 100%
 
-1. ระบบ Core Architecture ใหม่:
-   - 🗄️ Local Database (IndexedDB): บันทึก Media Files ลง Browser ป้องกันไฟล์หายเมื่อ Refresh
-   - 💾 Auto-save System: บันทึก Timeline State ลง LocalStorage อัตโนมัติทุกการเคลื่อนไหว
-   - 🔄 History Engine: ระบบ Undo/Redo สูงสุด 50 ขั้นตอน สำหรับทุก Action
-   - 🔒 Multi-user Security: แยกข้อมูล (Projects/Media) ของแต่ละ User โดยสมบูรณ์ด้วย Supabase & IndexedDB
-   - 🌐 Next.js 16 & Vercel Production Ready: เปลี่ยนมาใช้ Next.js 16 Middleware ที่เสถียร 100% บน Edge Runtime และทำงานร่วมกับ Railway Backend ในรูปแบบ Multi-service Production Deployed
-   - 🔗 Custom Domain Integrated: สถาปัตยกรรมรองรับการเชื่อมต่อกับ Custom Domain หลัก (`https://kerntemplate.online`) ผ่านระบบ DNS, Vercel Redirect, Supabase OAuth Callback และ Railway CORS Origin อย่างสมบูรณ์แบบ พร้อมระบบ URL Endpoint Helper ป้องกันปัญหา Double-Slash (`//`) และ 404 บั๊กบนโปรดักชัน 100%
+2. ส่วนประสานงานและแถบควบคุมเวลา (Editor Interface & Pro Timeline)
+🌑 ดีไซน์ธีมมืดเว้นระยะปลอดภัย (Dark Slate & Spacing Polish)
+หน้าจอโทนมืดสวยงาม มีระยะห่างขอบจอที่สมดุล ป้องกันแผงควบคุมเบียดหรือล้นตกขอบจอ
+🛠️ แถบเครื่องมือควบคุมการตัด (Timeline Toolbar)
+แถบปุ่มลัดทรงแคปซูล ประกอบด้วยปุ่มตัดด่วน (Split), ลบ (Delete), เล่น/หยุด (Play/Pause) และตัวคุมซูมไทม์ไลน์
+🎞️ แทร็กตัดต่อแยกเลเยอร์เฉพาะ (Pro Timeline Tracks)
+แยกแถวไทม์ไลน์ออกเป็น แทร็กภาพวิดีโอ, แทร็กเสียง และแทร็กตัวหนังสือ พร้อมปุ่มล็อกและปิดเสียงแยกแทร็ก
+✂️ หั่นตัดและดึงปรับความยาว (Precision Split & Trim)
+ใช้เมาส์ดึงขอบเพื่อปรับความยาว หรือกดคีย์ S บนคีย์บอร์ดเพื่อตัดแยกคลิปตรงตำแหน่ง Playhead ได้ทันที
+🧲 แม่เหล็กดูดขอบและลากวางอิสระ (Visual Snapping & Free-form Drag)
+ดูดคลิปให้แนบชิดติดขอบคลิปอื่นหรือพิกัด Playhead อัตโนมัติ ป้องกันหน้าจอดำระหว่างรอยต่อคลิป
+🔍 ขยายมุมมองแกนเวลา (Timeline Zoom Slider)
+ปรับยืดหดไทม์ไลน์ได้ตั้งแต่ 15% ถึง 400% เพื่อการตัดต่อเก็บงานละเอียดระดับเฟรมย่อย
+🔉 แยกคลื่นเสียงจากคลิปวิดีโอ (Separate Audio)
+คลิกขวาที่วิดีโอเพื่อแยกเสียงลงเลน Audio แยกต่างหากอัตโนมัติ พร้อมหรี่เสียงวิดีโอต้นฉบับเงียบสนิททันที
 
-2. Interface & UX (CapCut Pro Inspired & Spacing Polish):
-   - 🌑 Dark Slate Aesthetics: ธีมมืดระดับมืออาชีพ พร้อมความลึก (Depth) และมิติ (Shadows)
-   - 🛠️ Modern Toolbar: ระบบ Pill containers สำหรับเครื่องมือตัดต่อ และปุ่มแม่เหล็ก (Magnetic Timeline)
-   - 🎞️ Pro Timeline: ระบบแทร็กที่แยก Video/Audio/Text ชัดเจน พร้อมไอคอนบ่งชี้
-   - 📦 Media Library: ระบบจัดการไฟล์สื่อแบบ Single Unified Screen (รวมเอาแท็บ Upload และ URL Import วางไว้หน้าจอเดียวกันตาม Mockup สเก็ตช์ลายมือของผู้ใช้) สะดวก รวดเร็ว ไม่สลับหน้าจอ และแสดงผลไฟล์พรีวิวแบบ Real-time
-   - 📥 Unified URL & Icon Precision Fix: แก้ไขตำแหน่งรูปโลก (Globe) และช่องกรอก URL ด้วย **Inline Styles (`style={{ left: '12px' }}` และ `style={{ paddingLeft: '36px' }}`)** ป้องกันปัญหารูปโลกเบียดทับ placeholder อย่างถาวร 100%
-   - 📥 Sleek Tall Import & Loading States: ปุ่ม Import Files ดีไซน์ใหม่ที่มีความสูงเด่นชัดและมีมิติแบนราบสไตล์ CapCut Pro พร้อมระบบจำกัดขนาดไฟล์ไม่เกิน 50MB และแสดง Loading Spinner ผสานเอฟเฟกต์ pulse บ่งชี้สถานะการอัปโหลดเรียลไทม์ ป้องกันการเบิ้ลคลิกซ้ำซ้อน 100%
-   - 📢 Smart Notifications: ระบบแจ้งเตือน (Toasts) แบบสวยงามและไม่รบกวนการทำงาน
-   - 🚨 Stacked Modals (ConfirmModal): ปรับปรุงหน้าต่างยืนยันการทำงานแบบ CapCut Pro (เช่น ปุ่ม Sign Out / ยืนยันต่างๆ) ให้เป็นระเบียบสวยหรู ด้วยการถอด `overflow-hidden` และจัดตำแหน่งด้วย **Inline Styles (Padding 32px 24px 28px และขอบโค้งมน 24px)** ป้องกันปัญหามุมปุ่มล้นขอบหรือติดขอบล่างได้อย่างสมบูรณ์แบบ 100%
+3. คลังสื่ออเนกประสงค์หน้าเดียวจบ (Unified Media Library)
+📦 หน้ารวมอัปโหลดและนำเข้าลิงก์ (Single Unified Screen)
+วางกล่องลากไฟล์อัปโหลดจากคอมพิวเตอร์และช่องกรอกนำเข้า URL จากเว็บไว้ในหน้าเดียวกัน ไม่ต้องคลิกสลับแท็บ
+🎥 ตัวโหลดคลิปภายนอกอัจฉริยะ (YouTube & Web Downloader)
+ดึงคลิปจากลิงก์ YouTube/TikTok เข้ามาตัด โดยหลังบ้านจะดาวน์โหลดเป็น Proxy 480p น้ำหนักเบาเพื่อให้สครับเล่นไม่กระตุก
+🗑️ ปุ่มล้างแคชขยะคลังสื่อ (Clean Garbage)
+ปุ่มล้างไฟล์ Blob ตกค้างใน IndexedDB และไฟล์ชั่วคราวหลังบ้าน เพื่อเพิ่มพื้นที่และประหยัดพื้นที่จัดเก็บ
 
-3. ระบบการเรนเดอร์และประมวลผล:
-   - ⚡ Hybrid Rendering: เรนเดอร์ฝั่ง Client (พรีวิว) และฝั่ง Server (ส่งออก)
-   - 🎥 FFmpeg Integration: ประมวลผลวิดีโอระดับสูงบน Backend รองรับการใส่ Transition และ Text Overlay
-   - 🖥️ Hardware Acceleration: รองรับการเรนเดอร์ผ่าน NVENC (NVIDIA) เพื่อความเร็วสูงสุด พร้อม Smart Encoder Fallback อัตโนมัติ (GPU -> CPU) เมื่อพบปัญหาไดรเวอร์
-   - 📏 Aspect Ratio & Padding Auto-alignment: ปรับสัดส่วนคลิปและวิดีโอ (เช่น 9:16 แนวตั้ง) ให้อยู่ในกรอบส่งออก 1080p แนวนอนแบบ 'contain' พร้อมถมดำกึ่งกลางสวยงาม ป้องกันปัญหาวิดีโอโดนครอปขอบล่าง/บน และลบส่วนลายน้ำ (เช่น `@RankGoBig`) ออกโดยเด็ดขาด 100%
-   - 🔠 Font Size Precision Matching: ออกแบบระบบคูณขนาดตัวหนังสือสัมพันธ์กับ Canvas Preview ในชีวิตจริง ทำให้ขนาดและพิกัดที่ส่งออกออกมาตรงกับที่ตาเห็นในบราวเซอร์ 100%
-   - 🏥 Backend Health Monitor: ตรวจสอบการเชื่อมต่อกับเซิร์ฟเวอร์เรนเดอร์แบบ Real-time บนหน้าแอป
+4. แผงควบคุมและพรีวิวจอภาพ (Inspector & Canvas)
+📐 ปรับแต่งขนาดหมุนภาพตรงแคนวาส (Direct Preview Transform)
+กรอบสีขาว 8 จุดล้อมรอบชิ้นงานบนจอพรีวิว สามารถใช้เมาส์ยืดขยาย ย่อขนาด หรือคลิกหมุนเอียงชิ้นงานได้โดยตรง
+🎨 ตกแต่งตัวหนังสือภาษาไทยพรีเมียม (Text Styling & Custom Fonts)
+Inspector ตัวอักษรรองรับฟอนต์ไทยยอดนิยม ปรับขนาด สี ปรับแต่งเส้นขอบตัวพิมพ์ และสีพื้นหลังกล่องข้อความได้อิสระ
+🎚️ สไลเดอร์ระดับสีวิดีโอ (Color EQ Adjustments)
+ปรับระดับความสว่าง (Brightness), คอนทราสต์ (Contrast) และความสดสี (Saturation) แยกคลิปได้แบบเรียลไทม์
+🎭 จางภาพและเสียงเข้าออก (Transition Fades)
+ปรับตั้งเวลาเลือนหายตอนเริ่มคลิป (Fade In) และตอนท้ายคลิป (Fade Out) ช่วยให้ชิ้นงานต่อเนื่องอย่างกลมกลืน
 
-4. ฟีเจอร์ตัดต่อพื้นฐาน:
-   - ✂️ Split & Trim: ตัดวิดีโอได้แม่นยำระดับเฟรม (S key)
-   - 🗑️ Layer Management: จัดการเลเยอร์ซ้อนกันได้ไม่จำกัด
-   - 🧲 Magnetic Snapping: คลิปดูดติดกันอัตโนมัติเพื่อความรวดเร็ว
-   - 🔍 Timeline Zoom: ขยายดูรายละเอียดได้ตั้งแต่ 15% - 400%
-   - 🔉 Separate Audio: แยกเสียงออกจากวิดีโอได้ในคลิกเดียว (Right Click -> Separate Audio)
+5. ระบบปัญญาประดิษฐ์และประมวลผล (AI & Processing Engines)
+🎙️ เปลี่ยนข้อความเป็นเสียงพากย์ AI (Intelligent AI Voiceover)
+แปลงบทพิมพ์เป็นเสียงพูดธรรมชาติทันทีผ่าน Edge TTS th-TH-NiwatNeural และมีระบบสำรอง Google TTS Fallback มั่นใจสำเร็จ 100%
+🔤 ทำคำบรรยายพรีเมียมอัตโนมัติ (ASS Subtitles Engine)
+แปลงข้อความบรรยายบนไทม์ไลน์เป็นซับไตเติล ASS พร้อมใส่แอนิเมชันเครื่องพิมพ์ดีดและเฟดเข้าออกแบบสวยหรู
+🔊 ปรับแต่งและผสมเสียงระดับเดซิเบล (Intelligent Audio Mixer)
+รวมคลื่นเสียงทั้งหมด แปลงระดับเสียงสไลเดอร์ dB เป็น Linear และ resampling เป็น Stereo 44.1kHz เท่ากันทั้งหมดเพื่อความสมบูรณ์แบบ
 
-5. ฟีเจอร์ AI & ระบบประมวลผลอัจฉริยะ (Advanced AI & Intelligent Media Engine):
-   - 🎙️ AI Voiceover (Text-to-Speech): ระบบแปลงข้อความเป็นเสียงพากย์ด้วย AI ในคลิกเดียว รองรับหลากหลาย Speech Engines ชั้นนำระดับโลก เช่น Edge TTS (มาพร้อมเสียงพากย์ภาษาไทย NiwatNeural คุณภาพสูงและสมจริงเป็นธรรมชาติตัวตั้งต้น), Kokoro TTS, Piper ONNX, Google Translate API, และ OpenAI API (`tts-1`)
-   - ⚡ AI Smart Cut (Silence Remover): ระบบวิเคราะห์และลบช่วงเงียบหรือไม่มีเสียงพูดในวิดีโอแบบอัจฉริยะ เพื่อตัดต่อให้ได้จังหวะวิดีโอสไตล์ Fast-paced คอนเทนต์ยุคใหม่
-   - 📊 Automated Ranking Template: ฟังก์ชันสร้างสรรค์วิดีโอจัดอันดับ (Top 10 / Ranking) อัตโนมัติ พร้อมการทำ Transition แสงแฟลช (Flash Transition) ช่วงเปลี่ยนอันดับ และระบบใส่เสียงกลองรัว (Drum Roll) และเสียงวื้บ (Whoosh SFX) อัตโนมัติตามอันดับคลิป
-   - 🔤 Smart Captions & Subtitles Engine: สร้างไฟล์คำบรรยายพรีเมียม (.ass) อัตโนมัติจากบทพากย์ AI พร้อมใส่เอฟเฟกต์ Fade In/Out และแอนิเมชันเครื่องพิมพ์ดีด (Typewriter Effect) สำหรับฟอนต์ไทยยอดนิยมอย่าง Kanit
-   - 🔊 Audio Mixer & Volume Control: ระบบผสมผสานเสียงพากย์ AI, เสียงคลิปต้นฉบับ, ซาวด์เอฟเฟกต์ (SFX) และเพลงประกอบหลังบ้าน (Global Background Music) เข้าด้วยกันอย่างสมดุล พร้อมคุมความดังเบา (Volume) แยกแชนเนล
+6. คิวเรนเดอร์หลังบ้านประสิทธิภาพสูง (Cloud Server-Side Rendering)
+🎥 เรนเดอร์วิดีโอคลาวด์เสถียร (Cloud Timeline Processor)
+ส่งงานเข้าคิวเรนเดอร์คลาวด์หลังบ้าน โดยระบบจะดึงไฟล์ดิบอย่างรวดเร็วและใช้ FFmpeg compile วิดีโอสเกล 'contain' 1080p ลบลายน้ำภายนอก
+🖥️ เร่งความเร็วการเรนเดอร์และ Fallback (Hardware Acceleration)
+เร่งเข้ารหัสความเร็วสูงด้วยชิป GPU (NVENC/Media Foundation) และสลับกลับไปใช้ CPU (libx264) อัตโนมัติทันทีหากเกิดปัญหา เพื่อให้งานส่งออกสำเร็จ 100%
+🏥 ตรวจสุขภาพ API หลังบ้าน (Real-time Health Checker)
+ไอคอนแสดงสถานะไฟสัญญาณเตือนการเชื่อมต่อกับ Render Server (ไฟเขียว = ออนไลน์เสถียร / ไฟแดง = ออฟไลน์) ก่อนกดเรนเดอร์
 
-6. ระบบ Automation & CI/CD Pipeline:
-   - 🚀 GitHub Actions Integrated: ตรวจจับการเปลี่ยนแปลงของโค้ดเมื่อ Push/Pull Request เข้ากิ่งหลัก (main)
-   - 🧪 Dual Service CI Testing: แยกทดสอบกระบวนการบิลด์และการทดสอบของ Frontend (Next.js 16) และ Backend (NestJS) โดยอัตโนมัติ มั่นใจ 100% ว่าไม่มีการคอมไพล์โค้ดพังก่อนขึ้นระบบจริง
-   - ⏰ Multi-Option Keep-Alive Cron Job: ระบบตั้งเวลาปลุกเซิร์ฟเวอร์หลังบ้านอัตโนมัติทุก 15 นาที เพื่อแก้ไขปัญหา Cold Start และตรวจสุขภาพของ API Render Server อยู่เสมอ (รองรับทั้งผ่าน GitHub Actions keep-alive.yml หรือเชื่อมต่อไปยังบริการภายนอกอย่าง cron-job.org โดยตรง)
-
-สถานะ: V3.3 Production Ready - ฟีเจอร์ AI และสถาปัตยกรรมตัดต่อวิดีโอเสร็จสมบูรณ์ 100% พร้อมด้วย Spacing และ UI สุดหรูหราคมชัดปราศจากการซ้อนทับ
+7. ระบบตั้งเวลาและตรวจคุณภาพ (Automation & Keep-Alive)
+🚀 ตรวจสอบบิลด์ก่อนขึ้นระบบจริง (GitHub Actions CI)
+ป้องกันโค้ดหรือบิลด์เสียหายขึ้นระบบจริงด้วยการตรวจสอบบิลด์ NestJS และ Next.js 16 แยกจากกันผ่าน GitHub Actions
+⏰ ปลุกเซิร์ฟเวอร์เรนเดอร์ไม่ให้สลบ (Multi-Option Keep-Alive)
+รัน Cron Job เคาะกระตุ้นสุขภาพ Render Server ทุกๆ 15 นาที เพื่อแก้ปัญหา Cold Start ของเซิร์ฟเวอร์ Railway ทำให้ระบบตอบสนองเร็วทันที

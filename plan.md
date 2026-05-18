@@ -38,7 +38,7 @@
 - [x] **Text Styling:** กรอบ (Stroke/Outline), ไม่มีเงาแบบจำกัดสี, พื้นหลัง (Background)
 - [x] **Direct Canvas Edit:** ลากย่อขยาย (Resize/Scale) คลิปหรือข้อความจากบนหน้าจอวิดีโอพรีวิวโดยตรงแบบ 8 จุดพร้อม Rotate Handle
 - [x] **Inspector Redesign:** ใช้ Tabbed UI แบบ CapCut Online (Basic, Animation ฯลฯ)
-- [ ] **Keyframes (Basic):** มาร์คจุดตั้งต้นและจุดจบเพื่อทำแอนิเมชัน (เลื่อนไปทำทีหลัง)
+- [x] **Keyframes (Basic):** มาร์คจุดตั้งต้นและจุดจบเพื่อทำแอนิเมชัน (เสร็จสมบูรณ์ใน Render Engine และ Canvas)
 
 ### 🟢 Phase 4: Advanced Export Engine (FFmpeg) - DONE
 - [x] เขียนตัวแปลคำสั่ง Timeline ให้กลายเป็น `ffmpeg -filter_complex` สำหรับทำ Multi-track 
@@ -48,14 +48,14 @@
 
 - [x] **AI Voiceover (Text to Speech):** เชื่อมต่อกับ Edge TTS / OpenAI สำหรับทำเสียงพากย์
 - [x] **YouTube/TikTok Downloader:** ระบบดึงคลิปจาก Link มาตัดต่อได้ทันที
-- [ ] **AI Remove Background:** ระบบลบพื้นหลังวิดีโอ (Green Screen / Subject Removal)
+- [ ] **AI Remove Background:** ระบบลบพื้นหลังวิดีโอ (Green Screen / Subject Removal - Planned Future Integration)
 
 ### 🔵 Phase 6: Professional Polish (CapCut Feel)
 - [x] **Audio Waveforms:** แสดงคลื่นเสียงบนไทม์ไลน์เพื่อให้ตัดต่อตามจังหวะได้แม่นยำ
-- [ ] **Video Transitions:** ระบบ Transition พื้นฐาน (Fade, Cross Dissolve, Slide) - กำลังทำ
+- [ ] **Video Transitions:** ระบบ Transition พื้นฐาน (Fade In/Out สำเร็จ / Cross Dissolve, Slide - Planned Future Integration)
 - [x] **Keyframes (v1):** ปรับแต่งการเคลื่อนที่ (Motion) ของคลิปและตัวหนังสือผ่านจุด Keyframe
 - [x] **Color Adjustment:** ปรับ Brightness, Contrast, Saturation ในหน้า Inspector
-- [x] **Smart Cut:** (ลบช่วงที่เงียบหรือไม่มีเสียงพูดอัตโนมัติ)
+- [ ] **Smart Cut:** (ระบบวิเคราะห์และลบช่วงที่เงียบอัตโนมัติ - Planned Future Integration)
 
 ---
 

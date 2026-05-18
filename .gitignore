@@ -35,3 +35,11 @@ backend/uploads/
 backend/temp/
 uploads/
 temp/
+
+# Copilot & Gemini
+.copilot.md
+GEMINI.md
+.gemini/
+
+development_guide.md
+progress.md
