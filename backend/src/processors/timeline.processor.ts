@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 const execAsync = promisify(exec);
 import * as path from 'path';
@@ -246,7 +246,7 @@ export class TimelineProcessor {
       console.log('[Timeline] Command:', ffmpegCmd);
 
       try {
-        await execAsync(ffmpegCmd);
+        await this.runFFmpegWithProgress(ffmpegCmd, maxDuration, id);
       } catch (renderErr) {
         console.error('[Timeline] FFmpeg Render Command failed!', renderErr);
         
@@ -256,7 +256,7 @@ export class TimelineProcessor {
           const fallbackCmd = `ffmpeg -y -threads 0 ${inputArgs.join(' ')} -filter_complex "${filterComplex}" -sws_flags fast_bilinear -map "[${lastVideoLabel}]" -map "[aout]" -c:v ${fallbackEncoder} -preset ultrafast -crf 23 -pix_fmt yuv420p "${finalPath}"`;
           console.log('[Timeline] Command (Fallback):', fallbackCmd);
           try {
-            await execAsync(fallbackCmd);
+            await this.runFFmpegWithProgress(fallbackCmd, maxDuration, id);
             console.log('[Timeline] Fallback render with libx264 completed successfully!');
           } catch (fallbackErr) {
             console.error('[Timeline] Fallback render with libx264 also failed!', fallbackErr);
@@ -329,5 +329,57 @@ export class TimelineProcessor {
     expr = `if(gt(${t},${sorted[sorted.length - 1].time}),${lastVal},${expr})`;
 
     return expr;
+  }
+
+  private runFFmpegWithProgress(
+    cmd: string,
+    maxDuration: number,
+    id: string,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const ffmpegProcess = spawn(cmd, { shell: true });
+
+      let lastProgressUpdate = Date.now();
+      let lastPercentage = 10;
+
+      ffmpegProcess.stderr.on('data', (data) => {
+        const chunk = data.toString();
+        const match = chunk.match(/time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})/);
+        if (match) {
+          const hours = parseInt(match[1], 10);
+          const minutes = parseInt(match[2], 10);
+          const seconds = parseInt(match[3], 10);
+          const centiseconds = parseInt(match[4], 10);
+          const currentTime = hours * 3600 + minutes * 60 + seconds + centiseconds / 100;
+
+          if (maxDuration > 0) {
+            const ratio = Math.min(currentTime / maxDuration, 1);
+            const percentage = Math.round(10 + ratio * 80);
+
+            const now = Date.now();
+            if (percentage > lastPercentage && now - lastProgressUpdate > 1500) {
+              lastPercentage = percentage;
+              lastProgressUpdate = now;
+              console.log(`[Timeline] Render progress: ${percentage}%`);
+              this.supabaseService
+                .updateJobStatus(id, 'PROCESSING', percentage)
+                .catch((e) => console.error('[Timeline] Failed to update progress:', e));
+            }
+          }
+        }
+      });
+
+      ffmpegProcess.on('close', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`FFmpeg exited with code ${code}`));
+        }
+      });
+
+      ffmpegProcess.on('error', (err) => {
+        reject(err);
+      });
+    });
   }
 }

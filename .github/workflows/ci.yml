@@ -43,7 +43,7 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://rxdvptiilpdnzlwdpnno.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: mock-anon-key-for-ci-builds
-          NEXT_PUBLIC_BACKEND_URL: https://kern-r-production.up.railway.app
+          NEXT_PUBLIC_BACKEND_URL: https://kern-r.onrender.com
 
   # ----------------------------------------------------
   # 2. BACKEND CI: NestJS with Redis and FFmpeg support

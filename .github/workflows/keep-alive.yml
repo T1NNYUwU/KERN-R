@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Wake up & Check Health Status
         run: |
-          BACKEND_URL="https://kern-r-production.up.railway.app/api/videos/health"
+          BACKEND_URL="https://kern-r.onrender.com/api/videos/health"
           echo "🚀 Initiating ping to KERN-R Backend at: $BACKEND_URL"
           
           # ส่ง request ไปหา backend และบันทึกสถานะ HTTP Response Code
