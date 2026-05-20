@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
+# Install yt-dlp (essential for YouTube/TikTok Downloader)
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && chmod a+rx /usr/local/bin/yt-dlp
+
 # Create app directory
 WORKDIR /usr/src/app
 
@@ -28,5 +31,5 @@ RUN npm run build
 # Expose the port (Render uses PORT env var)
 EXPOSE 3005
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application in production mode
+CMD ["node", "dist/main"]
