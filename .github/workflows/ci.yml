@@ -1,4 +1,4 @@
-name: KERN-R Studio CI
+name: KERN-R Studio CI/CD
 
 on:
   push:
@@ -7,6 +7,9 @@ on:
     branches: [ main ]
 
 jobs:
+  # ----------------------------------------------------
+  # 1. FRONTEND CI: Next.js verification and building
+  # ----------------------------------------------------
   frontend-ci:
     name: Frontend CI (Next.js 16)
     runs-on: ubuntu-latest
@@ -26,9 +29,13 @@ jobs:
         working-directory: ./frontend
         run: npm install --legacy-peer-deps
 
+      - name: Security Vulnerability Scan
+        working-directory: ./frontend
+        run: npm audit --audit-level=high || true # ตรวจสอบช่องโหว่ความปลอดภัย โดยไม่บล็อก Build หากมี peer dependency warning
+
       - name: Lint Check (Warnings Only)
         working-directory: ./frontend
-        run: npm run lint || true # ป้องกันการพังจากกฎ Linting ที่เข้มงวดเกินไป เพื่อให้รายงานการวิเคราะห์และทำงานต่อได้เสถียร
+        run: npm run lint || true
 
       - name: Build Next.js Production App
         working-directory: ./frontend
@@ -38,9 +45,24 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: mock-anon-key-for-ci-builds
           NEXT_PUBLIC_BACKEND_URL: https://kern-r-production.up.railway.app
 
+  # ----------------------------------------------------
+  # 2. BACKEND CI: NestJS with Redis and FFmpeg support
+  # ----------------------------------------------------
   backend-ci:
-    name: Backend CI (NestJS)
+    name: Backend CI (NestJS + Redis + FFmpeg)
     runs-on: ubuntu-latest
+
+    # รัน Redis container คู่ขนานสำหรับระบบ Queue (BullMQ)
+    services:
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout Code
@@ -53,18 +75,81 @@ jobs:
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
+      - name: Install FFmpeg (Core Video Engine Dependency)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version # ยืนยันการติดตั้งสำเร็จ
+
       - name: Install Backend Dependencies
         working-directory: ./backend
         run: npm install
 
+      - name: Security Vulnerability Scan
+        working-directory: ./backend
+        run: npm audit --audit-level=high || true
+
       - name: Lint Check (Warnings Only)
         working-directory: ./backend
-        run: npm run lint || true # ป้องกันการพังจากกฎ Linting เพื่อวิเคราะห์โค้ดได้อย่างสมบูรณ์
+        run: npm run lint || true
 
       - name: Compile NestJS App
         working-directory: ./backend
         run: npm run build
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests (With Redis & FFmpeg available)
         working-directory: ./backend
         run: npm run test
+        env:
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+
+  # ----------------------------------------------------
+  # 3. FRONTEND DEPLOYMENT (CD): Runs only on main push and when CI passes
+  # ----------------------------------------------------
+  deploy-frontend:
+    name: Deploy Frontend (Vercel)
+    needs: frontend-ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.VERCEL_TOKEN != '' && secrets.VERCEL_TOKEN != null
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel Project Info
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  # ----------------------------------------------------
+  # 4. BACKEND DEPLOYMENT (CD): Runs only on main push and when CI passes
+  # ----------------------------------------------------
+  deploy-backend:
+    name: Deploy Backend (Railway)
+    needs: backend-ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.RAILWAY_TOKEN != '' && secrets.RAILWAY_TOKEN != null
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway via CLI
+        run: npx @railway/cli up --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
