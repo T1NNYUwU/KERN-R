@@ -5,7 +5,7 @@
   - [x] **Render.com Cloud Migration**: ย้ายตู้คอนเทนเนอร์ NestJS Backend ไปโฮสต์ที่ **Render.com** (Free Tier) พร้อมระบบรัน FFmpeg และ yt-dlp สำหรับประมวลผลตัดต่อวิดีโอออนไลน์สำเร็จ
   - [x] **Redis Cloud Integration**: เชื่อมต่อคิวประมวลผลวิดีโอ (BullMQ Queue) ไปยังฐานข้อมูลภายนอก **Redis Cloud** ของเดิมได้อย่างสมบูรณ์
   - [x] **Real-time FFmpeg Progress**: พัฒนาระบบดึงความคืบหน้าการประมวลผลวิดีโอจาก FFmpeg สดๆ ผ่าน `spawn` และเขียนเปอร์เซ็นต์ขยับแบบเรียลไทม์ (10% -> 90%) ลงในฐานข้อมูล Supabase (หมดปัญหาระบบแสดงความคืบหน้าค้างที่ 10% แล้วข้ามไป 90% ในทีเดียว)
-  - [x] **Keep-Alive & CD Update**: ปรับปรุงคำสั่งปิงปุกหลังบ้านและระบบดีพลอยของทั้ง `keep-alive.yml` และ `ci.yml` ให้เชื่อมไปยังโฮสต์ใหม่ `https://kern-r.onrender.com` ป้องกันปัญหาหน้าเว็บแจ้งเตือน Backend Offline อย่างถาวร
+  - [x] **Keep-Alive & CD Update**: ปรับปรุงคำสั่งปิงปลุกหลังบ้านและระบบดีพลอยของทั้ง `keep-alive.yml` และ `ci.yml` ให้เชื่อมไปยังโฮสต์ใหม่ `https://kern-r.onrender.com` ป้องกันปัญหาหน้าเว็บแจ้งเตือน Backend Offline อย่างถาวร
 - [x] **V3.4 Advanced CI/CD & DevSecOps Pipeline (100% Completed)**
   - [x] **Database & Queue Containerization**: ติดตั้งระบบ Redis Service Container บน GitHub Actions เพื่อจำลองคิวประมวลผลวิดีโอ (BullMQ) ในขั้นตอนรัน CI
   - [x] **FFmpeg Environment Setup**: ติดตั้ง FFmpeg ใน CI runner เพื่อให้พร้อมสำหรับการทดสอบฟังก์ชันการเรนเดอร์/ตัดต่อไฟล์วิดีโอจริงฝั่ง Backend

@@ -132,16 +132,15 @@ jobs:
   # 4. BACKEND DEPLOYMENT (CD): Runs only on main push and when CI passes
   # ----------------------------------------------------
   deploy-backend:
-    name: Deploy Backend (Railway)
+    name: Deploy Backend (Render)
     needs: backend-ci
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Railway via CLI
+      - name: Trigger Render Deploy Hook
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        if: env.RAILWAY_TOKEN != ''
-        run: npx @railway/cli up --detach
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        if: env.RENDER_DEPLOY_HOOK_URL != ''
+        run: |
+          echo "🚀 Triggering Render deploy..."
+          curl -f -X POST "$RENDER_DEPLOY_HOOK_URL"
