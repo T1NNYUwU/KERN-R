@@ -30,13 +30,23 @@ export async function middleware(request: NextRequest) {
   })
 
   // Refresh session เท่านั้น ไม่ทำ redirect (ให้ client-side จัดการ)
-  await supabase.auth.getUser()
+  // ป้องกันปัญหาเว็บบล็อกและขึ้น 504 เมื่อ Supabase ปิดตัว/ช้า โดยจำกัดเวลาไว้ไม่เกิน 1 วินาที
+  try {
+    await Promise.race([
+      supabase.auth.getUser(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Supabase request timeout')), 1000)
+      )
+    ])
+  } catch (err) {
+    console.warn('Supabase auth session refresh in middleware timed out or failed:', err)
+  }
 
   return supabaseResponse
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
